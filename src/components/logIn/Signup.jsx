@@ -1,7 +1,7 @@
 import { Button, Container, Paper, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getSignup } from "../../action/login";
+import { getSignup } from "../../actions/loginAction";
 
 export default function Signup() {
   const [fullName, setFullName] = useState("");

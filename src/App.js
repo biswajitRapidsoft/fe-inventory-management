@@ -1,24 +1,34 @@
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import "./App.css";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import Login from "./components/logIn/Login";
-import Signup from "./components/logIn/Signup";
-
-const route = createBrowserRouter([
-  {
-    path: "/",
-    element: <Login />,
-  },
-  {
-    path: "/signup",
-    element: <Signup />,
-  },
-]);
+import SignUp from "./components/logIn/Signup";
+import Dashboard from "./components/dashboard/Dashboard";
 
 function App() {
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <Login />,
+      errorElement: <h1>Error 404! Page Not Found!</h1>,
+    },
+
+    {
+      path: "/signup",
+      element: <SignUp />,
+      errorElement: <h1>Error 404! Page Not Found!</h1>,
+    },
+
+    {
+      path: "/dashboard",
+      element: <Dashboard />,
+      errorElement: <h1>Error 404! Page Not Found!</h1>,
+    },
+  ]);
+
   return (
-    <div>
-      <RouterProvider router={route} />
-    </div>
+    <>
+      <RouterProvider router={router} />
+    </>
   );
 }
 

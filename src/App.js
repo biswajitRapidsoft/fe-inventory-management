@@ -2,7 +2,12 @@ import "./App.css";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import Login from "./components/logIn/Login";
 import SignUp from "./components/logIn/Signup";
-import Dashboard from "./components/dashboard/Dashboard";
+import Landingpage from "./components/landingpage/Landingpage";
+import Dashboard from "./components/landingpage/dashboard/Dashboard";
+import Products from "./components/landingpage/products/Products";
+import Billing from "./components/landingpage/billing/Billing";
+import Addproduct from "./components/landingpage/products/Addproduct";
+import Addbill from "./components/landingpage/billing/Addbill";
 
 function App() {
   const router = createBrowserRouter([
@@ -19,9 +24,31 @@ function App() {
     },
 
     {
-      path: "/dashboard",
-      element: <Dashboard />,
+      path: "/landingpage",
+      element: <Landingpage />,
       errorElement: <h1>Error 404! Page Not Found!</h1>,
+      children: [
+        {
+          path: "/landingpage/dashboard",
+          element: <Dashboard />,
+        },
+        {
+          path: "/landingpage/products",
+          element: <Products />,
+        },
+        {
+          path: "/landingpage/billing",
+          element: <Billing />,
+        },
+        {
+          path: "/landingpage/products/app-product",
+          element: <Addproduct />,
+        },
+        {
+          path: "/landingpage/billing/app-bill",
+          element: <Addbill />,
+        },
+      ],
     },
   ]);
 

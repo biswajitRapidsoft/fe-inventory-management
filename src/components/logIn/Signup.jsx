@@ -1,6 +1,6 @@
 import { Button, Container, Paper, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { getSignup } from "../../actions/loginAction";
 
 export default function Signup() {
@@ -46,13 +46,16 @@ export default function Signup() {
 
   return (
     <>
-      <Container maxWidth="sm">
+      <Container maxWidth="sm" sx={{ my: 4 }}>
         <Paper elevation={4} sx={{ padding: 4 }}>
           <Typography variant="h3" textAlign="center">
             Sign Up
           </Typography>
 
-          <form onSubmit={(e) => handleSubmit(e)}>
+          <form
+            onSubmit={(e) => handleSubmit(e)}
+            style={{ marginBottom: "20px" }}
+          >
             <TextField
               label="Full Name"
               id="fullName"
@@ -183,6 +186,7 @@ export default function Signup() {
               Submit
             </Button>
           </form>
+          <NavLink to={"/"}>Back to login</NavLink>
         </Paper>
       </Container>
     </>

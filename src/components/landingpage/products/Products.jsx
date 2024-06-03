@@ -1,28 +1,33 @@
+import axios from "axios";
 import React, { useState, useEffect } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from "react-router-dom";
 
 export default function Products() {
   const navigate = useNavigate();
-  const [products, setProducts] = useState([
-    {
-      id: "123",
-      name: "iphone",
-      stock: "100",
-      sellingPrice: "100000",
-      costPrice: "50000",
-      type: "electronic",
-    },
-  ]);
+  const [products, setProducts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const loginuser = JSON.parse(localStorage.getItem("loginuser"));
 
   useEffect(() => {
-    const apiUrl = "https://api.example.com/products";
+    const apiUrl = "http://192.168.12.57:8080/admin/product/all";
 
     const fetchData = async () => {
       try {
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-        setProducts(data);
+        const response = await axios.get(apiUrl, {
+          headers: {
+            Authorization: `Bearer ${loginuser.jwtToken}`,
+          },
+        });
+        const products = response.data.map((product) => ({
+          id: product.productId,
+          name: product.productName,
+          sellingPrice: product.sellingPrice,
+          costPrice: product.costPrice,
+          type: product.productType,
+          stock: product.quantity,
+        }));
+        setProducts(products);
       } catch (error) {
         console.error("Error fetching products:", error);
       }
@@ -30,19 +35,34 @@ export default function Products() {
 
     fetchData();
   }, []);
-  const handleaddproduct = () => {
+
+  const handleAddProduct = () => {
     navigate("/landingpage/products/app-product");
   };
+
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="product-page">
       <div className="product-functionality">
         <div className="product-search">
-          <input type="text" placeholder="Search products..." />
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
           <SearchIcon sx={{ fontSize: 40 }} className="search-icon" />
         </div>
 
         <div className="product-add">
-          <button onClick={handleaddproduct}>+ Add Products</button>
+          <button onClick={handleAddProduct}>+ Add Products</button>
         </div>
       </div>
 
@@ -56,11 +76,11 @@ export default function Products() {
               <th>Selling Price</th>
               <th>Product Type</th>
               <th>Update Quantity</th>
-              <th>dekete product</th>
+              <th>Delete Product</th>
             </tr>
           </thead>
           <tbody>
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <tr key={product.id}>
                 <td>{product.name}</td>
                 <td>{product.stock}</td>
@@ -68,7 +88,7 @@ export default function Products() {
                 <td>{product.sellingPrice}</td>
                 <td>{product.type}</td>
                 <td>
-                  <button>update</button>
+                  <button>Update</button>
                 </td>
                 <td>
                   <button>Delete</button>

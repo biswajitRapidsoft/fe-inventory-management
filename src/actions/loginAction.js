@@ -3,7 +3,9 @@ import { fetchLogin, fetchSignup } from "../services/user.service";
 export const getLogin = async (loginbody) => {
   try {
     const logindetails = await fetchLogin(loginbody);
-    localStorage.setItem("token", logindetails.token);
+    console.log(logindetails);
+    localStorage.setItem("loginuser", JSON.stringify(logindetails));
+
     return logindetails;
   } catch (error) {
     console.error("Error while login", error);
@@ -12,7 +14,7 @@ export const getLogin = async (loginbody) => {
 };
 export const getSignup = async (signupbody) => {
   try {
-    const signupdetails = await fetchSignup();
+    const signupdetails = await fetchSignup(signupbody);
     return signupdetails;
   } catch (error) {
     console.error("Error while sign up:", error);

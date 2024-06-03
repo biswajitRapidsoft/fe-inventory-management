@@ -30,18 +30,18 @@ const Login = () => {
     e.preventDefault();
 
     const loginbody = {
-      username: email,
+      email: email,
       password: password,
     };
-    navigate("/landingpage/dashboard");
 
-    // try {
-    //   const fetchedlogin = await getLogin(loginbody);
-    //   setEmail("");
-    //   setPassword("");
-    // } catch (error) {
-    //   console.error("Error while login:", error);
-    // }
+    try {
+      const fetchedlogin = await getLogin(loginbody);
+      setEmail("");
+      setPassword("");
+      navigate("/landingpage/dashboard");
+    } catch (error) {
+      console.error("Error while login:", error);
+    }
   };
 
   return (

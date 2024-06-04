@@ -2,6 +2,9 @@ import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CancelIcon from "@mui/icons-material/Cancel";
+import Autocomplete from "@mui/material/Autocomplete";
+import TextField from "@mui/material/TextField";
+import config from "../../../config/config";
 
 const Addbill = () => {
   const navigate = useNavigate();
@@ -18,7 +21,7 @@ const Addbill = () => {
     const fetchProductOptions = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.12.57:8080/admin/product/all",
+          `${config.baseUrl}${config.apiEndPoint.addbill}`,
           {
             headers: {
               Authorization: `Bearer ${loginuser.jwtToken}`,
@@ -47,17 +50,17 @@ const Addbill = () => {
       {
         id: "",
         name: "",
-        quantity: 1,
+        quantity: 0,
         sellingPrice: 0,
-        maxQuantity: 1,
+        maxQuantity: 0,
         productCode: "",
       },
     ]);
   };
 
-  const handleProductIdChange = (index, value) => {
+  const handleProductChange = (index, newValue) => {
     const selectedProduct = productOptions.find(
-      (product) => product.id === parseInt(value)
+      (product) => product.id === newValue?.id
     );
 
     if (
@@ -73,7 +76,7 @@ const Addbill = () => {
       newProducts[index] = {
         id: selectedProduct.id,
         name: selectedProduct.name,
-        quantity: 1,
+        quantity: 0,
         sellingPrice: selectedProduct.sellingPrice,
         maxQuantity: selectedProduct.quantity,
         productCode: selectedProduct.productCode,
@@ -112,11 +115,11 @@ const Addbill = () => {
       productId: product.id,
       sellingPrice: product.sellingPrice,
       productCode: product.productCode,
-      count: product.quantity,
+      quantity: product.quantity,
     }));
 
     const order = {
-      userId: loginuser.userId,
+      userId: loginuser.adminId,
       customerName,
       description,
       phoneNo: customerNumber,
@@ -126,7 +129,7 @@ const Addbill = () => {
 
     try {
       const response = await axios.post(
-        "http://192.168.12.57:8080/admin/orders",
+        "http://192.168.12.57:8080/admin/product/sales",
         order,
         {
           headers: {
@@ -199,36 +202,46 @@ const Addbill = () => {
 
         {products.map((product, index) => (
           <div key={index} className="product-row">
-            <select
-              value={product.id}
-              onChange={(e) => handleProductIdChange(index, e.target.value)}
-            >
-              <option value="">Select Product</option>
-              {productOptions.map((option) => (
-                <option
-                  key={option.id}
-                  value={option.id}
-                  disabled={products.some((prod) => prod.id === option.id)}
-                >
-                  {option.name}
-                </option>
-              ))}
-            </select>
-            <input
-              type="number"
-              value={product.quantity}
-              max={product.maxQuantity}
-              onChange={(e) =>
-                handleProductQuantityChange(index, e.target.value)
-              }
-            />
-            <span className="product-price">₹{product.sellingPrice}</span>
-            <button
-              onClick={() => handleRemoveProduct(index)}
-              className="remove-product-button"
-            >
-              <CancelIcon />
-            </button>
+            <div className="product-row-name">
+              <Autocomplete
+                className="autocomplete"
+                value={
+                  productOptions.find((option) => option.id === product.id) ||
+                  null
+                }
+                onChange={(event, newValue) =>
+                  handleProductChange(index, newValue)
+                }
+                options={productOptions}
+                getOptionLabel={(option) => option.name}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Select Product"
+                    variant="outlined"
+                  />
+                )}
+              />
+              <input
+                className="quantity"
+                type="number"
+                value={product.quantity}
+                max={product.maxQuantity}
+                min={0}
+                onChange={(e) =>
+                  handleProductQuantityChange(index, e.target.value)
+                }
+              />
+            </div>
+            <div className="product-row-amount">
+              <span className="product-price">₹{product.sellingPrice}</span>
+              <button
+                onClick={() => handleRemoveProduct(index)}
+                className="remove-product-button"
+              >
+                <CancelIcon />
+              </button>
+            </div>
           </div>
         ))}
       </div>

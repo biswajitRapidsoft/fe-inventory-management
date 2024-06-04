@@ -1,8 +1,8 @@
-import axios from "axios";
 import React, { useState, useEffect } from "react";
-import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from "react-router-dom";
-
+import axios from "axios";
+import SearchIcon from "@mui/icons-material/Search";
+import config from "../../../config/config";
 export default function Products() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
@@ -10,42 +10,46 @@ export default function Products() {
   const loginuser = JSON.parse(localStorage.getItem("loginuser"));
 
   useEffect(() => {
-    const apiUrl = "http://192.168.12.57:8080/admin/product/all";
-
-    const fetchData = async () => {
+    const fetchProducts = async () => {
       try {
-        const response = await axios.get(apiUrl, {
-          headers: {
-            Authorization: `Bearer ${loginuser.jwtToken}`,
-          },
-        });
-        const products = response.data.map((product) => ({
-          id: product.productId,
-          name: product.productName,
-          sellingPrice: product.sellingPrice,
-          costPrice: product.costPrice,
-          type: product.productType,
-          stock: product.quantity,
-        }));
-        setProducts(products);
+        const response = await axios.get(
+          `${config.baseUrl}${config.apiEndPoint.allproduct}`,
+          {
+            headers: {
+              Authorization: `Bearer ${loginuser.jwtToken}`,
+            },
+          }
+        );
+        setProducts(
+          response.data.map((product) => ({
+            productId: product.productId,
+            productName: product.productName,
+            sellingPrice: product.sellingPrice,
+            costPrice: product.costPrice,
+            productType: product.productType,
+            quantity: product.quantity,
+            minimumQuantity: product.minimumQuantity,
+            productCode: product.productCode,
+            isActive: product.isActive,
+          }))
+        );
       } catch (error) {
         console.error("Error fetching products:", error);
       }
     };
 
-    fetchData();
+    fetchProducts();
   }, []);
 
-  const handleAddProduct = () => {
-    navigate("/landingpage/products/app-product");
-  };
+  const handleAddProduct = () => navigate("/landingpage/products/app-product");
 
-  const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value);
-  };
+  const handleUpdateProduct = (product) =>
+    navigate("/landingpage/products/app-product", { state: { product } });
+
+  const handleSearchChange = (event) => setSearchQuery(event.target.value);
 
   const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    product.productName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -60,16 +64,15 @@ export default function Products() {
           />
           <SearchIcon sx={{ fontSize: 40 }} className="search-icon" />
         </div>
-
         <div className="product-add">
-          <button onClick={handleAddProduct}>+ Add Products</button>
+          <button onClick={handleAddProduct}>+ Add Product</button>
         </div>
       </div>
-
       <div className="product-table">
         <table>
           <thead>
             <tr>
+              <th>Product code</th>
               <th>Product Name</th>
               <th>Stock</th>
               <th>Cost Price</th>
@@ -81,14 +84,17 @@ export default function Products() {
           </thead>
           <tbody>
             {filteredProducts.map((product) => (
-              <tr key={product.id}>
-                <td>{product.name}</td>
-                <td>{product.stock}</td>
+              <tr key={product.productId}>
+                <td>{product.productCode}</td>
+                <td>{product.productName}</td>
+                <td>{product.quantity}</td>
                 <td>{product.costPrice}</td>
                 <td>{product.sellingPrice}</td>
-                <td>{product.type}</td>
+                <td>{product.productType}</td>
                 <td>
-                  <button>Update</button>
+                  <button onClick={() => handleUpdateProduct(product)}>
+                    Update
+                  </button>
                 </td>
                 <td>
                   <button>Delete</button>

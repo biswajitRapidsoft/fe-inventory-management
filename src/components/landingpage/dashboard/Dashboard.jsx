@@ -5,6 +5,7 @@ import { NavLink } from "react-router-dom";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CurrencyRupeeIcon from "@mui/icons-material/CurrencyRupee";
 import Doughnutchart from "./Doughnutchart";
+import config from "../../../config/config";
 
 export default function Dashboard() {
   const [products, setProducts] = useState([]);
@@ -14,7 +15,7 @@ export default function Dashboard() {
   const loginuser = JSON.parse(localStorage.getItem("loginuser"));
 
   useEffect(() => {
-    const apiUrl = "http://192.168.12.57:8080/admin/product/all";
+    const apiUrl = `${config.baseUrl}${config.apiEndPoint.allproduct}`;
 
     const fetchData = async () => {
       try {

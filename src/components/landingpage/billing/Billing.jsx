@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from "react-router-dom";
+import config from "../../../config/config";
 
 export default function Billing() {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ export default function Billing() {
     const fetchBills = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.12.57:8080/admin/bill/all",
+          `${config.baseUrl}${config.apiEndPoint.allbill}?adminId=${loginuser.adminId}&page=0&size=5`,
           {
             headers: {
               Authorization: `Bearer ${loginuser.jwtToken}`,
@@ -27,7 +28,7 @@ export default function Billing() {
     };
 
     fetchBills();
-  }, [loginuser.jwtToken]);
+  }, [loginuser.jwtToken, loginuser.adminId]);
 
   const handleAddBill = () => {
     navigate("/landingpage/billing/app-bill");
@@ -37,10 +38,16 @@ export default function Billing() {
     setSearchQuery(e.target.value);
   };
 
+  const handleViewDetails = (bill) => {
+    console.log(bill);
+    navigate(`/landingpage/billing/details`, { state: { bill } });
+  };
+
   const filteredBills = bills.filter(
     (bill) =>
       bill.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      bill.description.toLowerCase().includes(searchQuery.toLowerCase())
+      bill.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      bill.date.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -71,6 +78,7 @@ export default function Billing() {
               <th>Customer Number</th>
               <th>Date</th>
               <th>Total Amount</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -78,9 +86,17 @@ export default function Billing() {
               <tr key={bill.id}>
                 <td>{bill.customerName}</td>
                 <td>{bill.description}</td>
-                <td>{bill.customerNumber}</td>
-                <td>{bill.date}</td>
+                <td>{bill.phoneNo}</td>
+                <td>{new Date(bill.date).toLocaleDateString()}</td>
                 <td>{bill.totalAmount}</td>
+                <td>
+                  <button
+                    onClick={() => handleViewDetails(bill)}
+                    style={{ backgroundColor: "blue", padding: "10px" }}
+                  >
+                    View More Details
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

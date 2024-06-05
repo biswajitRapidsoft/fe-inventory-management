@@ -6,33 +6,18 @@ import { Outlet } from "react-router-dom";
 
 export default function Landingpage() {
   const logedinuser = JSON.parse(localStorage.getItem("loginuser"));
-  if (logedinuser) {
-    return (
-      <div className="landingpage">
-        <div className="landingpage-header">
-          <Header />
-        </div>
-        <div className="landingpage-sidebar">
-          <Sidebar />
-        </div>
-        <div className="landingpage-outlet">
-          <Outlet />
-        </div>
+
+  return (
+    <div className="landingpage">
+      <div className="landingpage-header">
+        <Header />
       </div>
-    );
-  } else {
-    return (
-      <div className="landingpage">
-        <div className="landingpage-header">
-          <Header />
-        </div>
-        <div className="landingpage-sidebar">
-          <Sidebar />
-        </div>
-        <div className="landingpage-outlet">
-          <Outlet />
-        </div>
+      <div className="landingpage-sidebar">
+        <Sidebar />
       </div>
-    );
-  }
+      <div className="landingpage-outlet">
+        <Outlet />
+      </div>
+    </div>
+  );
 }

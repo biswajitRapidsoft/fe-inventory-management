@@ -8,6 +8,7 @@ import Products from "./components/landingpage/products/Products";
 import Billing from "./components/landingpage/billing/Billing";
 import Addproduct from "./components/landingpage/products/Addproduct";
 import Addbill from "./components/landingpage/billing/Addbill";
+import BillDetails from "./components/landingpage/billing/Billingdetails";
 
 function App() {
   const router = createBrowserRouter([
@@ -47,6 +48,10 @@ function App() {
         {
           path: "/landingpage/billing/app-bill",
           element: <Addbill />,
+        },
+        {
+          path: "/landingpage/billing/details",
+          element: <BillDetails />,
         },
       ],
     },

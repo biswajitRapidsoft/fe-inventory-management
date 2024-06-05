@@ -6,6 +6,8 @@ const config = Object.freeze({
     sigup: "admin/signup",
     allproduct: "admin/product/all",
     addproduct: "admin/product/create-update",
+    allbill: "admin/invoice",
+    addbill: "admin/product/sales",
   },
 });
 

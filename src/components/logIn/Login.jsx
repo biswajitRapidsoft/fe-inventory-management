@@ -16,7 +16,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [invalidlogindetails, setinvalidlogindetails] = useState(false);
+  const [error, seterror] = useState("");
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -40,6 +40,7 @@ const Login = () => {
       setPassword("");
       navigate("/landingpage/dashboard");
     } catch (error) {
+      seterror(error);
       console.error("Error while login:", error);
     }
   };
@@ -80,7 +81,9 @@ const Login = () => {
               value={password}
               onChange={handlePasswordChange}
             />
-            {invalidlogindetails && <p>enter valid login cridentials</p>}
+            {error && (
+              <p style={{ color: "red" }}>{error.response.data.message}</p>
+            )}
 
             <Button
               type="submit"

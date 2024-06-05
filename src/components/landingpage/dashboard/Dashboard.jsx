@@ -15,7 +15,7 @@ export default function Dashboard() {
   const loginuser = JSON.parse(localStorage.getItem("loginuser"));
 
   useEffect(() => {
-    const apiUrl = `${config.baseUrl}${config.apiEndPoint.allproduct}`;
+    const apiUrl = `${config.baseUrl}${config.apiEndPoint.allproduct}?adminId=${loginuser.adminId}`;
 
     const fetchData = async () => {
       try {

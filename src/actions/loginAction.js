@@ -3,7 +3,6 @@ import { fetchLogin, fetchSignup } from "../services/user.service";
 export const getLogin = async (loginbody) => {
   try {
     const logindetails = await fetchLogin(loginbody);
-    console.log(logindetails);
     localStorage.setItem("loginuser", JSON.stringify(logindetails));
 
     return logindetails;

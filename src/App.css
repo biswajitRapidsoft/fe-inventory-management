@@ -536,6 +536,16 @@ body {
 .previous-billings {
   margin-top: 20px;
 }
+.previous-billings button {
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  background-color: blue;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
 
 .previous-billings h1 {
   margin-bottom: 20px;
@@ -631,4 +641,94 @@ form {
 
 .MuiButton-outlinedPrimary:hover {
   background-color: rgba(0, 123, 255, 0.04);
+}
+.bill-details {
+  width: 60%;
+  margin: 20px auto;
+  font-family: "Arial", sans-serif;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+}
+
+.bill-header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.total-amount-section,
+.date-section {
+  text-align: left;
+}
+
+.total-amount-section p,
+.date-section p {
+  margin: 0;
+  font-weight: bold;
+  color: #555;
+}
+
+.total-amount-section h2,
+.date-section h2 {
+  margin: 5px 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.bill-info p {
+  margin: 5px 0;
+  color: #555;
+}
+
+.bill-info p:first-child {
+  margin-top: 20px;
+}
+
+.bill-products h3 {
+  margin: 20px 0 10px 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.bill-products table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.bill-products th,
+.bill-products td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+  color: #555;
+}
+
+.bill-products th {
+  background-color: #f9f9f9;
+  font-weight: bold;
+}
+
+.bill-products td {
+  vertical-align: top;
+}
+
+.bill-products img {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+}
+.generate-invoice-button {
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  background-color: blue;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }

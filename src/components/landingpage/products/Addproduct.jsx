@@ -57,12 +57,8 @@ const AddProductForm = () => {
 
     try {
       const apiUrl = `${config.baseUrl}${config.apiEndPoint.addproduct}`;
-      const method = "post";
 
-      const response = await axios({
-        method,
-        url: apiUrl,
-        data: productData,
+      const response = await axios.post(apiUrl, productData, {
         headers: {
           Authorization: `Bearer ${loginuser.jwtToken}`,
         },

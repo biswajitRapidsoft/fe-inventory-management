@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import SearchIcon from "@mui/icons-material/Search";
 import config from "../../../config/config";
+
 export default function Products() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
@@ -13,7 +14,7 @@ export default function Products() {
     const fetchProducts = async () => {
       try {
         const response = await axios.get(
-          `${config.baseUrl}${config.apiEndPoint.allproduct}`,
+          `${config.baseUrl}${config.apiEndPoint.allproduct}?adminId=${loginuser.adminId}`,
           {
             headers: {
               Authorization: `Bearer ${loginuser.jwtToken}`,
@@ -52,6 +53,47 @@ export default function Products() {
     product.productName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const toggleProductActiveStatus = (product) => {
+    return {
+      ...product,
+      isActive: !product.isActive,
+    };
+  };
+
+  const handleisactive = async (product) => {
+    const updatedProduct = toggleProductActiveStatus(product);
+
+    const productData = {
+      productId: String(updatedProduct.productId),
+      adminId: String(loginuser.adminId),
+      productName: updatedProduct.productName,
+      productType: updatedProduct.productType,
+      costPrice: String(updatedProduct.costPrice),
+      sellingPrice: String(updatedProduct.sellingPrice),
+      quantity: String(updatedProduct.quantity),
+      minimumQuantity: String(updatedProduct.minimumQuantity),
+      isActive: updatedProduct.isActive,
+    };
+
+    try {
+      const apiUrl = `${config.baseUrl}${config.apiEndPoint.addproduct}`;
+
+      await axios.post(apiUrl, productData, {
+        headers: {
+          Authorization: `Bearer ${loginuser.jwtToken}`,
+        },
+      });
+
+      setProducts((prevProducts) =>
+        prevProducts.map((p) =>
+          p.productId === product.productId ? updatedProduct : p
+        )
+      );
+    } catch (error) {
+      console.error("Error updating product:", error);
+    }
+  };
+
   return (
     <div className="product-page">
       <div className="product-functionality">
@@ -74,7 +116,7 @@ export default function Products() {
             <tr>
               <th>Product code</th>
               <th>Product Name</th>
-              <th>Stock</th>
+              <th>In Stock</th>
               <th>Cost Price</th>
               <th>Selling Price</th>
               <th>Product Type</th>
@@ -84,7 +126,16 @@ export default function Products() {
           </thead>
           <tbody>
             {filteredProducts.map((product) => (
-              <tr key={product.productId}>
+              <tr
+                key={product.productId}
+                style={{
+                  color:
+                    product.minimumQuantity >= product.quantity
+                      ? "red"
+                      : "black",
+                  textDecoration: product.isActive ? "none" : "line-through",
+                }}
+              >
                 <td>{product.productCode}</td>
                 <td>{product.productName}</td>
                 <td>{product.quantity}</td>
@@ -97,7 +148,9 @@ export default function Products() {
                   </button>
                 </td>
                 <td>
-                  <button>Delete</button>
+                  <button onClick={() => handleisactive(product)}>
+                    {product.isActive ? "Active" : "Inactive"}
+                  </button>
                 </td>
               </tr>
             ))}

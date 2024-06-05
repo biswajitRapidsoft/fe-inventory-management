@@ -7,6 +7,7 @@ export default function Signup() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, seterror] = useState("");
 
   let navigate = useNavigate();
 
@@ -23,6 +24,7 @@ export default function Signup() {
       const response = await getSignup(userRegDetails);
       navigate("/");
     } catch (error) {
+      seterror(error);
       console.log(error);
     }
   };
@@ -76,7 +78,9 @@ export default function Signup() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-
+            {error && (
+              <p style={{ color: "red" }}>{error.response.data.message}</p>
+            )}
             <Button
               type="submit"
               variant="contained"

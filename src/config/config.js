@@ -8,17 +8,19 @@ const config = Object.freeze({
     addproduct: "admin/product/create-update",
     allbill: "admin/invoice",
     addbill: "admin/product/sales",
+    billbydate: "admin/invoice/by-date",
   },
 });
-
-// const config = Object.freeze({
+// // const config = Object.freeze({
 //   baseUrl: "http://192.168.12.48:8080/",
 
 //   apiEndPoint: {
 //     login: "ims/signin",
 //     sigup: "ims/signup",
 //     allproduct: "ims/getProducts",
-//     addproduct: "ims/addProduct",
+//     addproduct: "ims/addOrUpdateProduct",
+//     allbill: "ims/getSells",
+//     addbill: "ims/sells",
 //   },
 // });
 
@@ -28,8 +30,10 @@ const config = Object.freeze({
 //   apiEndPoint: {
 //     login: "IMS/login",
 //     sigup: "IMS/signup",
-//     allproduct: "admin/product/all",
+//     allproduct: "IMS/allproducts",
+//     addproduct: "IMS/addproduct",
+//     allbill: "IMS/allorders",
+//     addbill: "IMS/order",
 //   },
 // });
-
 export default config;

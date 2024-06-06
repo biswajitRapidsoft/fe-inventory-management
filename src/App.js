@@ -9,6 +9,7 @@ import Billing from "./components/landingpage/billing/Billing";
 import Addproduct from "./components/landingpage/products/Addproduct";
 import Addbill from "./components/landingpage/billing/Addbill";
 import BillDetails from "./components/landingpage/billing/Billingdetails";
+import Myacount from "./components/landingpage/myacount/Myacount";
 
 function App() {
   const router = createBrowserRouter([
@@ -52,6 +53,10 @@ function App() {
         {
           path: "/landingpage/billing/details",
           element: <BillDetails />,
+        },
+        {
+          path: "/landingpage/myacount",
+          element: <Myacount />,
         },
       ],
     },

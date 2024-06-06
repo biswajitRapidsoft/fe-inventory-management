@@ -1,12 +1,19 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import CancelIcon from "@mui/icons-material/Cancel";
-import Autocomplete from "@mui/material/Autocomplete";
-import TextField from "@mui/material/TextField";
-import config from "../../../config/config";
+import {
+  Autocomplete,
+  Button,
+  Container,
+  Grid,
+  IconButton,
+  TextField,
+  Typography,
+  Box,
+} from "@mui/material";
 import { MuiTelInput } from "mui-tel-input";
-
+import config from "../../../config/config";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 const AddBill = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
@@ -134,9 +141,7 @@ const AddBill = () => {
       !description ||
       products.length === 0
     ) {
-      alert(
-        "Please provide customer name, customer number, description, and add at least one product."
-      );
+      alert("Please  add at least one product.");
       return;
     }
 
@@ -181,12 +186,7 @@ const AddBill = () => {
         }
       );
 
-      if (response.status === 200) {
-        console.log("Invoice created:", response.data);
-        navigate("/landingpage/billing");
-      } else {
-        console.error("Failed to save order");
-      }
+      navigate("/landingpage/billing");
     } catch (error) {
       console.error("Error:", error);
     }
@@ -201,117 +201,116 @@ const AddBill = () => {
   };
 
   return (
-    <div className="add-bill">
-      <form onSubmit={handleSave}>
-        <div className="bill-header">
-          <div className="bill-amount">
-            <p>Total amount</p>
-            <h2>Rs {totalAmount}</h2>
-          </div>
-          <div className="bill-date">
-            <p>Date</p>
-            <h2>{date}</h2>
-          </div>
-        </div>
+    <Container>
+      <Box
+        component="form"
+        onSubmit={handleSave}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          maxWidth: 600,
+          margin: "auto",
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h5">Total Amount: Rs {totalAmount}</Typography>
+          <Typography variant="h5">Date: {date}</Typography>
+        </Box>
 
-        <div className="bill-customer">
-          <label>Customer Name</label>
-          <input
-            required
-            type="text"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-          />
-        </div>
-        <div className="bill-customer">
-          <MuiTelInput value={customerNumber} onChange={handleChange} />
-        </div>
+        <TextField
+          required
+          label="Customer Name"
+          value={customerName}
+          onChange={(e) => setCustomerName(e.target.value)}
+          fullWidth
+        />
 
-        <div className="bill-description">
-          <label>Description</label>
-          <textarea
-            required
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
+        <MuiTelInput
+          required
+          value={customerNumber}
+          onChange={handleChange}
+          fullWidth
+          label="Phone Number"
+          inputProps={{ maxLength: 15 }}
+        />
 
-        <div className="bill-products">
-          <div className="add-product-button-container">
-            <h3>Products</h3>
-            <button
-              type="button"
-              onClick={handleAddProduct}
-              className="add-product-button"
-            >
-              + Add product
-            </button>
-          </div>
+        <TextField
+          required
+          label="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          multiline
+          rows={4}
+          fullWidth
+        />
 
-          {products.map((product, index) => (
-            <div key={index} className="product-row">
-              <div className="product-row-name">
-                <Autocomplete
-                  className="autocomplete"
-                  value={
-                    productOptions.find(
-                      (option) => option.productId === product.productId
-                    ) || null
-                  }
-                  onChange={(event, newValue) =>
-                    handleProductChange(index, newValue)
-                  }
-                  options={productOptions}
-                  getOptionLabel={(option) => option.productName}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Select Product"
-                      variant="outlined"
-                      required
-                    />
-                  )}
-                />
-                <input
-                  className="quantity"
-                  type="number"
-                  value={product.quantity}
-                  max={product.maxQuantity}
-                  min={0}
-                  onChange={(e) =>
-                    handleProductQuantityChange(index, e.target.value)
-                  }
-                  required
-                />
-              </div>
-              <div className="product-row-amount">
-                <span className="product-price">₹{product.totalPrice}</span>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveProduct(index)}
-                  className="remove-product-button"
-                >
-                  <CancelIcon />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h5">Products:</Typography>
+          <Button variant="contained" onClick={handleAddProduct}>
+            + Add Product
+          </Button>
+        </Box>
 
-        <div className="bill-actions">
-          <button type="submit" className="save-button">
+        {products.map((product, index) => (
+          <Grid container spacing={2} key={index} alignItems="center">
+            <Grid item xs={6}>
+              <Autocomplete
+                value={
+                  productOptions.find(
+                    (option) => option.productId === product.productId
+                  ) || null
+                }
+                onChange={(event, newValue) =>
+                  handleProductChange(index, newValue)
+                }
+                options={productOptions}
+                getOptionLabel={(option) => option.productName}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Select Product"
+                    variant="outlined"
+                    required
+                    fullWidth
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <TextField
+                type="number"
+                label="Quantity"
+                value={product.quantity}
+                inputProps={{ min: 0, max: product.maxQuantity }}
+                onChange={(e) =>
+                  handleProductQuantityChange(index, e.target.value)
+                }
+                required
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={1}>
+              <Typography>₹{product.totalPrice}</Typography>
+            </Grid>
+            <Grid item xs={1}>
+              <IconButton onClick={() => handleRemoveProduct(index)}>
+                <DeleteForeverIcon />
+              </IconButton>
+            </Grid>
+          </Grid>
+        ))}
+
+        <Box display="flex" justifyContent="space-between" gap={2}>
+          <Button variant="contained" color="primary" type="submit">
             Save
-          </button>
-          <button
-            type="button"
-            className="cancel-button"
-            onClick={handleCancel}
-          >
+          </Button>
+          <Button variant="outlined" color="secondary" onClick={handleCancel}>
             Cancel
-          </button>
-        </div>
-      </form>
-    </div>
+          </Button>
+        </Box>
+      </Box>
+    </Container>
   );
 };
 

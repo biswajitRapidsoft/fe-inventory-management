@@ -8,6 +8,7 @@ export default function Products() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortOption, setSortOption] = useState("all");
   const loginuser = JSON.parse(localStorage.getItem("loginuser"));
 
   useEffect(() => {
@@ -48,10 +49,6 @@ export default function Products() {
     navigate("/landingpage/products/app-product", { state: { product } });
 
   const handleSearchChange = (event) => setSearchQuery(event.target.value);
-
-  const filteredProducts = products.filter((product) =>
-    product.productName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   const toggleProductActiveStatus = (product) => {
     return {
@@ -94,6 +91,32 @@ export default function Products() {
     }
   };
 
+  const handleSortChange = (event) => {
+    setSortOption(event.target.value);
+  };
+
+  const getFilteredProducts = () => {
+    switch (sortOption) {
+      case "outOfStock":
+        return products.filter((product) => product.quantity === 0);
+      case "lowStock":
+        return products.filter(
+          (product) =>
+            product.quantity <= product.minimumQuantity && product.quantity > 0
+        );
+      case "active":
+        return products.filter((product) => product.isActive);
+      case "inactive":
+        return products.filter((product) => !product.isActive);
+      default:
+        return products;
+    }
+  };
+
+  const filteredProducts = getFilteredProducts().filter((product) =>
+    product.productName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="product-page">
       <div className="product-functionality">
@@ -109,6 +132,15 @@ export default function Products() {
         <div className="product-add">
           <button onClick={handleAddProduct}>+ Add Product</button>
         </div>
+      </div>
+      <div className="product-sort">
+        <select value={sortOption} onChange={handleSortChange}>
+          <option value="all">All Products</option>
+          <option value="outOfStock">Out of Stock</option>
+          <option value="lowStock">Low Stock</option>
+          <option value="active">Active Products</option>
+          <option value="inactive">Inactive Products</option>
+        </select>
       </div>
       <div className="product-table">
         <table>

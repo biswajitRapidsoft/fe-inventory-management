@@ -4,7 +4,6 @@ import userimg from "../../img/download.png";
 
 export default function Header() {
   const logedinuser = JSON.parse(localStorage.getItem("loginuser"));
-
   return (
     <div className="header">
       <div className="header-logo">

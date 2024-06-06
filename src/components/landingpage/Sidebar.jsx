@@ -46,6 +46,19 @@ export default function Sidebar() {
         <DescriptionIcon />
         <p>Billing</p>
       </NavLink>
+      <NavLink
+        to="/landingpage/myacount"
+        className={({ isActive, isPending }) =>
+          isPending
+            ? "pending"
+            : isActive
+            ? " sidebar-child active"
+            : "sidebar-child"
+        }
+      >
+        <DescriptionIcon />
+        <p>My acount</p>
+      </NavLink>
     </div>
   );
 }

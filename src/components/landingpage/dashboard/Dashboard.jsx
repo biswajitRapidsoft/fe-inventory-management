@@ -4,46 +4,81 @@ import dasimg from "../../../img/baaca0eb0e33dc4f9d45910b8c86623f0144cea0fe0c209
 import { NavLink } from "react-router-dom";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CurrencyRupeeIcon from "@mui/icons-material/CurrencyRupee";
-import Doughnutchart from "./Doughnutchart";
 import config from "../../../config/config";
-
+import Doughnutchart from "./Doughnutchart";
+import BarChart from "./Barchart";
 export default function Dashboard() {
-  const [products, setProducts] = useState([]);
   const [outOfStockCount, setOutOfStockCount] = useState(0);
   const [lowStockCount, setLowStockCount] = useState(0);
   const [totalSales, setTotalSales] = useState(0);
+  const [todaysSales, setTodaysSales] = useState([]);
   const loginuser = JSON.parse(localStorage.getItem("loginuser"));
 
   useEffect(() => {
-    const apiUrl = `${config.baseUrl}${config.apiEndPoint.allproduct}?adminId=${loginuser.adminId}`;
+    fetchProducts();
+    fetchbills();
+  }, []);
 
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(apiUrl, {
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get(
+        `${config.baseUrl}${config.apiEndPoint.allproduct}?adminId=${loginuser.adminId}`,
+        {
           headers: {
             Authorization: `Bearer ${loginuser.jwtToken}`,
           },
-        });
-        setProducts(response.data);
+        }
+      );
 
-        const outOfStock = response.data.filter(
-          (product) => product.quantity === 0
-        ).length;
-        const lowStock = response.data.filter(
-          (product) =>
-            product.quantity > 0 && product.quantity <= product.minimumQuantity
-        ).length;
+      const outOfStock = response.data.filter(
+        (product) => product.quantity === 0
+      ).length;
+      const lowStock = response.data.filter(
+        (product) =>
+          product.quantity > 0 && product.quantity <= product.minimumQuantity
+      ).length;
 
-        setOutOfStockCount(outOfStock);
-        setLowStockCount(lowStock);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      }
+      setOutOfStockCount(outOfStock);
+      setLowStockCount(lowStock);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
+
+  const fetchbills = async () => {
+    const getCurrentDateFormatted = () => {
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+      const day = String(currentDate.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
     };
+    const currentDate = getCurrentDateFormatted();
 
-    fetchData();
-  }, []);
+    try {
+      const response = await axios.get(
+        `${config.baseUrl}${config.apiEndPoint.billbydate}?adminId=${loginuser.adminId}&date=${currentDate}`,
+        {
+          headers: {
+            Authorization: `Bearer ${loginuser.jwtToken}`,
+          },
+        }
+      );
 
+      const initialValue = 0;
+      const sumWithInitial = response.data.reduce(
+        (accumulator, currentValue) => accumulator + currentValue.totalAmount,
+        initialValue
+      );
+      setTotalSales(sumWithInitial);
+      setTodaysSales(response.data);
+    } catch (error) {
+      console.error("Error fetching bills:", error);
+    }
+  };
+  console.log(todaysSales);
+  console.log(totalSales);
   return (
     <div className="dashboard">
       <div className="dashboard-about">
@@ -87,10 +122,10 @@ export default function Dashboard() {
 
       <div className="dashboard-chart">
         <div className="doughnutchart">
-          <Doughnutchart />
+          <Doughnutchart todaysSales={todaysSales} />
         </div>
         <div className="doughnutchart">
-          <Doughnutchart />
+          <BarChart todaysSales={todaysSales} />
         </div>
       </div>
     </div>

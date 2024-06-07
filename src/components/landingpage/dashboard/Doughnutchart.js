@@ -4,32 +4,31 @@ import { Doughnut } from "react-chartjs-2";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-// Custom plugin to display total quantity sales in the center
-const totalQuantityPlugin = {
-  id: "totalQuantity",
-  afterDraw: (chart) => {
-    const ctx = chart.ctx;
-    const canvas = chart.canvas;
-    const total = chart.config.data.datasets[0].data.reduce(
-      (acc, val) => acc + val,
-      0
-    );
+// const totalQuantityPlugin = {
+//   id: "totalQuantity",
+//   afterDraw: (chart) => {
+//     const ctx = chart.ctx;
+//     const canvas = chart.canvas;
+//     const total = chart.config.data.datasets[0].data.reduce(
+//       (acc, val) => acc + val,
+//       0
+//     );
 
-    ctx.restore();
-    const fontSize = (canvas.width / 100).toFixed(2);
-    ctx.font = fontSize + "em sans-serif";
-    ctx.textBaseline = "middle";
+//     ctx.restore();
+//     const fontSize = (canvas.width / 100).toFixed(2);
+//     ctx.font = fontSize + "em sans-serif";
+//     ctx.textBaseline = "middle";
 
-    const text = total.toString(); // Total quantity
-    const textX = Math.round((canvas.width - ctx.measureText(text).width) / 2);
-    const textY = canvas.height / 2;
+//     const text = total.toString(); // Total quantity
+//     const textX = Math.round((canvas.width - ctx.measureText(text).width) / 2);
+//     const textY = canvas.height / 2;
 
-    ctx.fillText(text, textX, textY);
-    ctx.save();
-  },
-};
+//     ctx.fillText(text, textX, textY);
+//     ctx.save();
+//   },
+// };
 
-ChartJS.register(totalQuantityPlugin);
+// ChartJS.register(totalQuantityPlugin);
 
 export default function DoughnutChart({ todaysSales }) {
   function extractProductSales(salesData) {
@@ -101,7 +100,7 @@ export default function DoughnutChart({ todaysSales }) {
   };
 
   return (
-    <div style={{ height: "400px", width: "400px" }}>
+    <div style={{ height: "400px", width: "100%" }}>
       <Doughnut data={data} options={options} />
     </div>
   );

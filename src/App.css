@@ -33,21 +33,11 @@ body {
   padding: 30px;
 }
 
-@media screen and (max-width: 768px) {
-  .loginimg {
-    display: none;
-  }
-
-  .logincontainer {
-    grid-template-columns: 1fr;
-  }
-}
-
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 70px;
+  min-height: 70px;
   border-bottom: 1px solid gray;
   padding: 0 20px;
 }
@@ -95,22 +85,6 @@ body {
   font-size: x-large;
 }
 
-@media screen and (max-width: 480px) {
-  .header-logo p {
-    height: 40px;
-    width: 40px;
-    font-size: large;
-  }
-
-  .header-logo h3 {
-    font-size: large;
-  }
-
-  .header-user p {
-    font-size: large;
-  }
-}
-
 /* Sidebar Styles */
 .sidebar {
   height: calc(100vh - 70px);
@@ -127,6 +101,7 @@ body {
   gap: 10px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  text-decoration: none;
 }
 
 .sidebar-child:hover {
@@ -209,18 +184,6 @@ body {
   color: #fff;
 }
 
-@media screen and (max-width: 768px) {
-  .dashboard-about {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-
-  .dashboard-about img {
-    width: 80%;
-    height: auto;
-  }
-}
-
 .dashboard-stock {
   display: flex;
   justify-content: space-between;
@@ -268,10 +231,15 @@ body {
 }
 
 .dashboard-chart {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-wrap: wrap;
 }
-
+.doughnutchart,
+.barchart {
+  flex: 1; /* Each chart takes equal space */
+  margin: 10px; /* Add margin between charts */
+  max-width: 50%; /* Limit the width of each chart to 50% of the container */
+}
 /* Product Page Styles */
 .product-page {
   padding: 20px;
@@ -284,7 +252,8 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  gap: 100px;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .product-search {
@@ -294,7 +263,6 @@ body {
 }
 
 .product-search input {
-  flex-grow: 1;
   padding: 10px 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -325,7 +293,15 @@ body {
 .product-add button:hover {
   background-color: #0056b3;
 }
-
+.product-sort select {
+  padding: 10px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-right: 10px;
+  height: 40px;
+  background-color: #007bff;
+  color: white;
+}
 .product-table {
   background-color: #fff;
   border-radius: 5px;
@@ -564,16 +540,6 @@ body {
   background-color: #f4f4f4;
 }
 
-@media screen and (max-width: 480px) {
-  .dashboard-about-info h1 {
-    font-size: 1.5em;
-  }
-
-  .dashboard-about-info a {
-    font-size: 1em;
-    padding: 8px 16px;
-  }
-}
 .add-product-container {
   display: flex;
   justify-content: center;
@@ -720,3 +686,116 @@ body {
   border-radius: 5px;
   cursor: pointer;
 }
+/* Existing CSS... */
+
+@media screen and (max-width: 1024px) {
+  .dashboard-about {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .dashboard-about img {
+    width: 100%;
+    height: auto;
+  }
+
+  .dashboard-about-info {
+    text-align: center;
+    margin-top: 20px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .dashboard-stock {
+    flex-direction: column;
+    align-items: center;
+    /* justify-content: center; */
+  }
+
+  .dashboard-stock-child {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 20px;
+  }
+
+  .doughnutchart {
+    margin-bottom: 20px;
+  }
+
+  /* Landing Page */
+  .landingpage {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .landingpage-header {
+    grid-column: 1 / -1;
+  }
+
+  .landingpage-sidebar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .landingpage-outlet {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  .sidebar {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: auto;
+    padding: 10px;
+    border-bottom: 1px solid gray;
+    border-right: none;
+  }
+
+  .sidebar-child {
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    margin: 0;
+    border-radius: 5px;
+    gap: 5px;
+  }
+
+  .sidebar-child p {
+    font-size: 12px;
+  }
+
+  .doughnutchart,
+  .barchart {
+    max-width: 100%; /* On smaller screens, each chart takes full width */
+  }
+
+  .loginimg {
+    display: none;
+  }
+
+  .logincontainer {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .dashboard-about-info h1 {
+    font-size: 1.2em;
+  }
+
+  .dashboard-stock-child h3 {
+    font-size: 1em;
+  }
+
+  .dashboard-stock-count h3 {
+    font-size: 1.2em;
+  }
+
+  .dashboard-chart h1 {
+    font-size: 1em;
+  }
+}
+
+/* Existing CSS... */

@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Avatar, Typography, Button, Container } from "@mui/material";
-
+import { Avatar, Typography, Button, Container } from "@mui/material";
+import img1 from "../../../img/download.png";
 export default function MyAccount() {
   const navigate = useNavigate();
   const loginuser = JSON.parse(localStorage.getItem("loginuser"));
@@ -13,13 +13,13 @@ export default function MyAccount() {
 
   return (
     <Container
+      style={{ height: "calc(100vh - 70px)" }}
       maxWidth="sm"
       sx={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        height: "100vh",
         bgcolor: "background.paper",
         boxShadow: 3,
         borderRadius: 2,
@@ -28,14 +28,14 @@ export default function MyAccount() {
     >
       <Avatar
         alt={loginuser.username}
-        src="/path/to/your/default/image.jpg" // Change this to the path of your default image
+        src={img1}
         sx={{ width: 100, height: 100, mb: 2 }}
       />
       <Typography variant="h4" gutterBottom>
-        {loginuser.username}
+        {loginuser.userName}
       </Typography>
       <Typography variant="body1" gutterBottom>
-        User ID: {loginuser.userId}
+        User ID: {loginuser.adminId}
       </Typography>
       <Typography variant="body1" gutterBottom>
         Email: {loginuser.email}

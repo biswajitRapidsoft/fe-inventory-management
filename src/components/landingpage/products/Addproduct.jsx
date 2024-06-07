@@ -14,6 +14,7 @@ const AddProductForm = () => {
     productType: "",
     quantity: "",
     minimumQuantity: "",
+
     costPrice: "",
     sellingPrice: "",
     productId: "",
@@ -67,11 +68,27 @@ const AddProductForm = () => {
       console.log("Product added/updated successfully:", response.data);
       navigate("/landingpage/products");
     } catch (error) {
+      handleTokenError(error);
+
       console.error("Error adding/updating product:", error);
       setError("Failed to add/update product. Please try again.");
     }
   };
-
+  const handleTokenError = (error) => {
+    if (
+      (error.response && error.response.status === 403) ||
+      (error.response && error.response.status === 401)
+    ) {
+      localStorage.removeItem("loginuser");
+      navigate("/landingpage", {
+        state: {
+          errorMessage: "Invalid session, please login again",
+        },
+      });
+    } else {
+      console.error("Error:", error);
+    }
+  };
   return (
     <Box className="add-product-container">
       <form onSubmit={handleSubmit}>

@@ -1,7 +1,8 @@
-import { Button, Container, Paper, TextField, Typography } from "@mui/material";
+import { Button, Paper, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { getSignup } from "../../actions/loginAction";
+import img1 from "../../img/customised-data-image.png";
 
 export default function Signup() {
   const [fullName, setFullName] = useState("");
@@ -21,7 +22,7 @@ export default function Signup() {
     };
 
     try {
-      const response = await getSignup(userRegDetails);
+      await getSignup(userRegDetails);
       navigate("/");
     } catch (error) {
       seterror(error);
@@ -30,10 +31,13 @@ export default function Signup() {
   };
 
   return (
-    <>
-      <Container maxWidth="sm" sx={{ my: 4 }}>
+    <div className="logincontainer">
+      <div className="loginimg">
+        <img src={img1} alt="" />
+      </div>
+      <div className="loginform">
         <Paper elevation={4} sx={{ padding: 4 }}>
-          <Typography variant="h3" textAlign="center">
+          <Typography variant="h4" textAlign="center">
             Sign Up
           </Typography>
 
@@ -93,7 +97,7 @@ export default function Signup() {
           </form>
           <NavLink to={"/"}>Back to login</NavLink>
         </Paper>
-      </Container>
-    </>
+      </div>
+    </div>
   );
 }

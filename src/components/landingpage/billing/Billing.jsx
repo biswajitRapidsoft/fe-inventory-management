@@ -4,7 +4,6 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from "react-router-dom";
 import config from "../../../config/config";
 import {
-  Card,
   Table,
   TableHead,
   TableBody,
@@ -14,7 +13,10 @@ import {
   Button,
   InputBase,
   Box,
+  TableContainer,
+  Paper,
 } from "@mui/material";
+import { Snackbar, Alert } from "@mui/material";
 
 export default function Billing() {
   const navigate = useNavigate();
@@ -23,7 +25,9 @@ export default function Billing() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [totalBills, setTotalBills] = useState(0);
-
+  const [errorMessage, setErrorMessage] = useState("");
+  const [error, setError] = useState(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
   const loginuser = JSON.parse(localStorage.getItem("loginuser"));
 
   const fetchBills = async () => {
@@ -37,6 +41,7 @@ export default function Billing() {
       setBills(response.data || []);
       setTotalBills(response.data[0].totalBills);
     } catch (error) {
+      handleTokenError(error);
       console.error("Error fetching bills:", error);
       setBills([]);
       setTotalBills(0);
@@ -45,7 +50,7 @@ export default function Billing() {
 
   useEffect(() => {
     fetchBills();
-  }, [loginuser.jwtToken, loginuser.adminId, page, rowsPerPage]);
+  }, [page, rowsPerPage]);
 
   const handleAddBill = () => navigate("/landingpage/billing/app-bill");
 
@@ -68,19 +73,59 @@ export default function Billing() {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+  const handleTokenError = (error) => {
+    if (error.response) {
+      const errorMessage = error.response.data.message;
+      setError(errorMessage);
+      setOpenSnackbar(true);
 
+      if (error.response.status === 403 || error.response.status === 401) {
+        localStorage.removeItem("loginDetails");
+        navigate("/landingpage", {
+          state: {
+            errorMessage: "Invalid session, please login again",
+          },
+        });
+      }
+    } else {
+      console.error("Error fetching order history:", error.message);
+    }
+    // if (
+    //   (error.response && error.response.status === 403) ||
+    //   (error.response && error.response.status === 401)
+    // ) {
+    //   localStorage.removeItem("loginuser");
+    //   navigate("/landingpage", {
+    //     state: {
+    //       errorMessage: "Invalid session, please login again",
+    //     },
+    //   });
+    // } else {
+    //   console.error("Error:", error);
+    // }
+  };
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
   return (
     <div className="billing-page">
       <Box
         display="flex"
         justifyContent="space-between"
         alignItems="center"
+        flexWrap="wrap"
+        gap="10px"
         mb={2}
       >
         <Box display="flex" alignItems="center">
           <form
             onSubmit={handleSearch}
-            style={{ display: "flex", alignItems: "center" }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "10px",
+            }}
           >
             <InputBase
               placeholder="Search bill..."
@@ -107,7 +152,7 @@ export default function Billing() {
 
       <div className="previous-billings">
         <h1>Previous Bills</h1>
-        <Card>
+        <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
@@ -159,8 +204,17 @@ export default function Billing() {
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
-        </Card>
+        </TableContainer>
       </div>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="error">
+          {error}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

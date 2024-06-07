@@ -22,10 +22,11 @@ const AddBill = () => {
   const [customerName, setCustomerName] = useState("");
   const [description, setDescription] = useState("");
   const [customerNumber, setCustomerNumber] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState("");
   const loginuser = JSON.parse(localStorage.getItem("loginuser"));
 
   useEffect(() => {
+    setDate(new Date().toISOString().split("T")[0]);
     const fetchProductOptions = async () => {
       try {
         const response = await axios.get(
@@ -50,7 +51,9 @@ const AddBill = () => {
           }));
 
         setProductOptions(availableProducts);
+        console.log(response);
       } catch (error) {
+        handleTokenError(error);
         console.error("Failed to fetch product options", error);
       }
     };
@@ -187,7 +190,9 @@ const AddBill = () => {
       );
 
       navigate("/landingpage/billing");
+      console.log(response);
     } catch (error) {
+      handleTokenError(error);
       console.error("Error:", error);
     }
   };
@@ -199,7 +204,21 @@ const AddBill = () => {
   const handleChange = (newValue) => {
     setCustomerNumber(newValue);
   };
-
+  const handleTokenError = (error) => {
+    if (
+      (error.response && error.response.status === 403) ||
+      (error.response && error.response.status === 401)
+    ) {
+      localStorage.removeItem("loginuser");
+      navigate("/landingpage", {
+        state: {
+          errorMessage: "Invalid session, please login again",
+        },
+      });
+    } else {
+      console.error("Error:", error);
+    }
+  };
   return (
     <Container>
       <Box

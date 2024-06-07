@@ -1,4 +1,5 @@
 import React from "react";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -8,7 +9,6 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { Bar } from "react-chartjs-2";
 
 ChartJS.register(
   CategoryScale,
@@ -64,7 +64,7 @@ export default function BarChart({ todaysSales }) {
       {
         label: "Sales",
         data: quantitiesSold,
-        backgroundColor: backgroundColor,
+        backgroundColor: "blue",
       },
     ],
   };
@@ -85,11 +85,7 @@ export default function BarChart({ todaysSales }) {
           label: (context) => {
             const label = context.label || "";
             const value = context.parsed.y || 0;
-            const percent = (
-              (value / quantitiesSold.reduce((a, b) => a + b, 0)) *
-              100
-            ).toFixed(2);
-            return `${label}: ${value} (${percent}%)`;
+            return `${label}: ${value}`;
           },
         },
       },
@@ -102,7 +98,7 @@ export default function BarChart({ todaysSales }) {
   };
 
   return (
-    <div style={{ height: "400px", width: "600px" }}>
+    <div style={{ width: "100%,", height: "400px" }}>
       <Bar data={data} options={options} />
     </div>
   );

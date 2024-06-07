@@ -1,13 +1,6 @@
 // src/LoginPage.js
 import React, { useState } from "react";
-import {
-  Container,
-  TextField,
-  Button,
-  Typography,
-  Box,
-  Paper,
-} from "@mui/material";
+import { TextField, Button, Typography, Paper } from "@mui/material";
 import { NavLink, useNavigate } from "react-router-dom";
 import { getLogin } from "../../actions/loginAction";
 import img1 from "../../img/customised-data-image.png";
@@ -36,6 +29,7 @@ const Login = () => {
 
     try {
       const fetchedlogin = await getLogin(loginbody);
+      console.log(fetchedlogin);
       setEmail("");
       setPassword("");
       navigate("/landingpage/dashboard");

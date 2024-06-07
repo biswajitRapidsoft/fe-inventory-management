@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import SearchIcon from "@mui/icons-material/Search";
 import config from "../../../config/config";
-
+import { Snackbar, Alert } from "@mui/material";
 export default function Products() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortOption, setSortOption] = useState("all");
+  const [sortOption, setSortOption] = useState(
+    location.state?.sortOption || "all"
+  );
   const loginuser = JSON.parse(localStorage.getItem("loginuser"));
-
+  const [errorMessage, setErrorMessage] = useState("");
+  const [error, setError] = useState(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -36,12 +41,12 @@ export default function Products() {
           }))
         );
       } catch (error) {
-        console.error("Error fetching products:", error);
+        handleTokenError(error);
       }
     };
 
     fetchProducts();
-  }, []);
+  }, [loginuser.adminId, loginuser.jwtToken]);
 
   const handleAddProduct = () => navigate("/landingpage/products/app-product");
 
@@ -87,7 +92,7 @@ export default function Products() {
         )
       );
     } catch (error) {
-      console.error("Error updating product:", error);
+      handleTokenError(error);
     }
   };
 
@@ -113,6 +118,40 @@ export default function Products() {
     }
   };
 
+  const handleTokenError = (error) => {
+    if (error.response) {
+      const errorMessage = error.response.data.message;
+      setError(errorMessage);
+      setOpenSnackbar(true);
+
+      if (error.response.status === 403 || error.response.status === 401) {
+        localStorage.removeItem("loginDetails");
+        navigate("/landingpage", {
+          state: {
+            errorMessage: "Invalid session, please login again",
+          },
+        });
+      }
+    } else {
+      console.error("Error fetching order history:", error.message);
+    }
+    // if (
+    //   (error.response && error.response.status === 403) ||
+    //   (error.response && error.response.status === 401)
+    // ) {
+    //   localStorage.removeItem("loginuser");
+    //   navigate("/landingpage", {
+    //     state: {
+    //       errorMessage: "Invalid session, please login again",
+    //     },
+    //   });
+    // } else {
+    //   console.error("Error:", error);
+    // }
+  };
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
   const filteredProducts = getFilteredProducts().filter((product) =>
     product.productName.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -129,19 +168,20 @@ export default function Products() {
           />
           <SearchIcon sx={{ fontSize: 40 }} className="search-icon" />
         </div>
+        <div className="product-sort">
+          <select value={sortOption} onChange={handleSortChange}>
+            <option value="all">All Products</option>
+            <option value="outOfStock">Out of Stock</option>
+            <option value="lowStock">Low Stock</option>
+            <option value="active">Active Products</option>
+            <option value="inactive">Inactive Products</option>
+          </select>
+        </div>
         <div className="product-add">
           <button onClick={handleAddProduct}>+ Add Product</button>
         </div>
       </div>
-      <div className="product-sort">
-        <select value={sortOption} onChange={handleSortChange}>
-          <option value="all">All Products</option>
-          <option value="outOfStock">Out of Stock</option>
-          <option value="lowStock">Low Stock</option>
-          <option value="active">Active Products</option>
-          <option value="inactive">Inactive Products</option>
-        </select>
-      </div>
+
       <div className="product-table">
         <table>
           <thead>
@@ -189,6 +229,15 @@ export default function Products() {
           </tbody>
         </table>
       </div>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="error">
+          {error}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

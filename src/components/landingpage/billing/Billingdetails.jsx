@@ -31,7 +31,7 @@ const BillDetails = () => {
     doc.setTextColor("#000000");
     doc.text(`Transaction ID:`, 14, 50);
     doc.setTextColor("#000000");
-    doc.text(bill.transactionId, 100, 50);
+    doc.text(bill.orderId, 100, 50);
 
     doc.setFontSize(12);
     doc.setTextColor("#000000");
@@ -102,7 +102,7 @@ const BillDetails = () => {
       </div>
 
       <div className="bill-info">
-        <p>Transaction ID: {bill.transactionId}</p>
+        <p>Order ID: {bill.orderId}</p>
         <p>Description: {bill.description}</p>
         <p>Customer name: {bill.customerName}</p>
         <p>

@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -10,10 +9,14 @@ import {
   TextField,
   Typography,
   Box,
+  Paper,
 } from "@mui/material";
 import { MuiTelInput } from "mui-tel-input";
-import config from "../../../config/config";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import { Snackbar, Alert } from "@mui/material";
+import { addbill } from "../../../actions/billingAction";
+import { getallproduct } from "../../../actions/productAction";
+
 const AddBill = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
@@ -21,42 +24,14 @@ const AddBill = () => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [customerName, setCustomerName] = useState("");
   const [description, setDescription] = useState("");
-  const [customerNumber, setCustomerNumber] = useState("");
+  const [customerNumber, setCustomerNumber] = useState("+91");
   const [date, setDate] = useState("");
+  const [error, setError] = useState(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
   const loginuser = JSON.parse(localStorage.getItem("loginuser"));
 
   useEffect(() => {
     setDate(new Date().toISOString().split("T")[0]);
-    const fetchProductOptions = async () => {
-      try {
-        const response = await axios.get(
-          `${config.baseUrl}${config.apiEndPoint.allproduct}?adminId=${loginuser.adminId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${loginuser.jwtToken}`,
-            },
-          }
-        );
-        const availableProducts = response.data
-          .filter((product) => product.isActive)
-          .map((product) => ({
-            productId: product.productId,
-            productName: product.productName,
-            productType: product.productType,
-            minimumQuantity: product.minimumQuantity,
-            quantity: product.quantity,
-            sellingPrice: product.sellingPrice,
-            productCode: product.productCode,
-            isActive: product.isActive,
-          }));
-
-        setProductOptions(availableProducts);
-        console.log(response);
-      } catch (error) {
-        handleTokenError(error);
-        console.error("Failed to fetch product options", error);
-      }
-    };
 
     fetchProductOptions();
   }, [loginuser.adminId, loginuser.jwtToken]);
@@ -178,19 +153,9 @@ const AddBill = () => {
     };
 
     try {
-      const response = await axios.post(
-        `${config.baseUrl}${config.apiEndPoint.addbill}`,
-        order,
-        {
-          headers: {
-            Authorization: `Bearer ${loginuser.jwtToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await addbill(order);
 
       navigate("/landingpage/billing");
-      console.log(response);
     } catch (error) {
       handleTokenError(error);
       console.error("Error:", error);
@@ -205,31 +170,66 @@ const AddBill = () => {
     setCustomerNumber(newValue);
   };
   const handleTokenError = (error) => {
-    if (
-      (error.response && error.response.status === 403) ||
-      (error.response && error.response.status === 401)
-    ) {
-      localStorage.removeItem("loginuser");
-      navigate("/landingpage", {
-        state: {
-          errorMessage: "Invalid session, please login again",
-        },
-      });
+    if (error.response) {
+      if (error.response.data.message) {
+        const errorMessage = error.response.data.message;
+        setError(errorMessage);
+        setOpenSnackbar(true);
+      }
+
+      if (error.response.status === 403 || error.response.status === 401) {
+        localStorage.removeItem("loginuser");
+        navigate("/landingpage", {
+          state: {
+            errorMessage: "Invalid session, please login again",
+          },
+        });
+      }
     } else {
-      console.error("Error:", error);
+      console.error("Error fetching order history:", error.message);
     }
   };
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
+
+  const fetchProductOptions = async () => {
+    try {
+      const response = await getallproduct();
+
+      const availableProducts = response.data
+        .filter((product) => product.isActive)
+        .map((product) => ({
+          productId: product.productId,
+          productName: product.productName,
+          productType: product.productType,
+          minimumQuantity: product.minimumQuantity,
+          quantity: product.quantity,
+          sellingPrice: product.sellingPrice,
+          productCode: product.productCode,
+          isActive: product.isActive,
+        }));
+
+      setProductOptions(availableProducts);
+    } catch (error) {
+      handleTokenError(error);
+      console.error("Failed to fetch product options", error);
+    }
+  };
+
   return (
     <Container>
-      <Box
+      <Paper
+        elevation={3}
         component="form"
         onSubmit={handleSave}
         sx={{
           display: "flex",
           flexDirection: "column",
           gap: 2,
-          maxWidth: 600,
-          margin: "auto",
+          maxWidth: 700,
+          margin: "20px auto",
+          padding: "20px",
         }}
       >
         <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -256,7 +256,7 @@ const AddBill = () => {
 
         <TextField
           required
-          label="Description"
+          label="Remarks"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           multiline
@@ -328,7 +328,16 @@ const AddBill = () => {
             Cancel
           </Button>
         </Box>
-      </Box>
+      </Paper>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="error">
+          {error}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

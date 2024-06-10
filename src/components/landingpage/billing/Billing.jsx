@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from "react-router-dom";
-import config from "../../../config/config";
 import {
   Table,
   TableHead,
@@ -11,32 +9,33 @@ import {
   TableCell,
   TablePagination,
   Button,
-  InputBase,
+  TextField,
   Box,
   TableContainer,
   Paper,
 } from "@mui/material";
 import { Snackbar, Alert } from "@mui/material";
+import { getallbill } from "../../../actions/billingAction";
 
 export default function Billing() {
   const navigate = useNavigate();
   const [bills, setBills] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchDate, setSearchDate] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [totalBills, setTotalBills] = useState(0);
-  const [errorMessage, setErrorMessage] = useState("");
   const [error, setError] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const loginuser = JSON.parse(localStorage.getItem("loginuser"));
 
   const fetchBills = async () => {
     try {
-      const response = await axios.get(
-        `${config.baseUrl}${config.apiEndPoint.allbill}?adminId=${loginuser.adminId}&customerName=${searchQuery}&page=${page}&size=${rowsPerPage}`,
-        {
-          headers: { Authorization: `Bearer ${loginuser.jwtToken}` },
-        }
+      const response = await getallbill(
+        searchQuery,
+        page,
+        rowsPerPage,
+        searchDate
       );
       setBills(response.data || []);
       setTotalBills(response.data[0].totalBills);
@@ -55,6 +54,7 @@ export default function Billing() {
   const handleAddBill = () => navigate("/landingpage/billing/app-bill");
 
   const handleSearchChange = (e) => setSearchQuery(e.target.value);
+  const handleDateChange = (e) => setSearchDate(e.target.value);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -73,14 +73,17 @@ export default function Billing() {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+
   const handleTokenError = (error) => {
     if (error.response) {
-      const errorMessage = error.response.data.message;
-      setError(errorMessage);
-      setOpenSnackbar(true);
+      if (error.response.data.message) {
+        const errorMessage = error.response.data.message;
+        setError(errorMessage);
+        setOpenSnackbar(true);
+      }
 
       if (error.response.status === 403 || error.response.status === 401) {
-        localStorage.removeItem("loginDetails");
+        localStorage.removeItem("loginuser");
         navigate("/landingpage", {
           state: {
             errorMessage: "Invalid session, please login again",
@@ -90,23 +93,12 @@ export default function Billing() {
     } else {
       console.error("Error fetching order history:", error.message);
     }
-    // if (
-    //   (error.response && error.response.status === 403) ||
-    //   (error.response && error.response.status === 401)
-    // ) {
-    //   localStorage.removeItem("loginuser");
-    //   navigate("/landingpage", {
-    //     state: {
-    //       errorMessage: "Invalid session, please login again",
-    //     },
-    //   });
-    // } else {
-    //   console.error("Error:", error);
-    // }
   };
+
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
   };
+
   return (
     <div className="billing-page">
       <Box
@@ -127,16 +119,31 @@ export default function Billing() {
               gap: "10px",
             }}
           >
-            <InputBase
-              placeholder="Search bill..."
+            <TextField
+              placeholder="search by name/number"
               value={searchQuery}
               onChange={handleSearchChange}
-              startAdornment={<SearchIcon sx={{ mr: 1 }} />}
+              InputProps={{
+                startAdornment: <SearchIcon sx={{ mr: 1 }} />,
+              }}
               sx={{
-                border: "1px solid #ccc",
                 borderRadius: 1,
                 padding: "4px 8px",
                 width: "250px",
+                marginRight: 2,
+              }}
+            />
+            <TextField
+              type="date"
+              value={searchDate}
+              onChange={handleDateChange}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              sx={{
+                borderRadius: 1,
+                padding: "4px 8px",
+                width: "200px",
                 marginRight: 2,
               }}
             />
@@ -156,8 +163,10 @@ export default function Billing() {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell>Order Id</TableCell>
                 <TableCell>Customer Name</TableCell>
-                <TableCell>Description</TableCell>
+                <TableCell>Remarks</TableCell>
+                <TableCell>Number of product</TableCell>
                 <TableCell>Phone Number</TableCell>
                 <TableCell>Date</TableCell>
                 <TableCell>Total Amount</TableCell>
@@ -167,12 +176,21 @@ export default function Billing() {
             <TableBody>
               {bills.length > 0 ? (
                 bills.map((bill) => (
-                  <TableRow key={bill.transactionId}>
+                  <TableRow key={bill.orderId}>
+                    <TableCell>{bill.orderId}</TableCell>
                     <TableCell>{bill.customerName}</TableCell>
                     <TableCell>{bill.description}</TableCell>
+                    <TableCell>{bill.products.length}</TableCell>
                     <TableCell>{bill.phoneNo}</TableCell>
                     <TableCell>
-                      {new Date(bill.date).toLocaleDateString()}
+                      {new Date(bill.date).toLocaleString([], {
+                        month: "numeric",
+                        day: "numeric",
+                        year: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
                     </TableCell>
                     <TableCell>{bill.totalAmount}</TableCell>
                     <TableCell>
@@ -188,7 +206,7 @@ export default function Billing() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">
+                  <TableCell colSpan={8} align="center">
                     No bills found.
                   </TableCell>
                 </TableRow>

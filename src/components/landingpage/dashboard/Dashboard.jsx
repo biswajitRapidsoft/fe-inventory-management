@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import dasimg from "../../../img/baaca0eb0e33dc4f9d45910b8c86623f0144cea0fe0c2093c546d17d535752eb-1-.jpg";
 import { NavLink, useNavigate } from "react-router-dom";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CurrencyRupeeIcon from "@mui/icons-material/CurrencyRupee";
-import config from "../../../config/config";
 import Doughnutchart from "./Doughnutchart";
 import BarChart from "./Barchart";
 import { Snackbar, Alert } from "@mui/material";
+import { getallproduct } from "../../../actions/productAction";
+import { getallbill } from "../../../actions/billingAction";
 
 export default function Dashboard() {
   const [outOfStockCount, setOutOfStockCount] = useState(0);
@@ -20,24 +20,17 @@ export default function Dashboard() {
   const [errorMessage, setErrorMessage] = useState("");
   const [error, setError] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const loginuser = JSON.parse(localStorage.getItem("loginuser"));
   const navigate = useNavigate();
 
   useEffect(() => {
+    // debugger;
     fetchProducts();
     fetchBills(selectedDate);
   }, [selectedDate]);
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(
-        `${config.baseUrl}${config.apiEndPoint.allproduct}?adminId=${loginuser.adminId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${loginuser.jwtToken}`,
-          },
-        }
-      );
+      const response = await getallproduct();
 
       const outOfStock = response.data.filter(
         (product) => product.quantity === 0
@@ -50,7 +43,7 @@ export default function Dashboard() {
       setOutOfStockCount(outOfStock);
       setLowStockCount(lowStock);
     } catch (error) {
-      handleTokenError(error);
+      // handleTokenError(error);
 
       console.error("Error fetching products:", error);
     }
@@ -58,14 +51,7 @@ export default function Dashboard() {
 
   const fetchBills = async (date) => {
     try {
-      const response = await axios.get(
-        `${config.baseUrl}${config.apiEndPoint.billbydate}?adminId=${loginuser.adminId}&date=${date}`,
-        {
-          headers: {
-            Authorization: `Bearer ${loginuser.jwtToken}`,
-          },
-        }
-      );
+      const response = await getallbill("", "", "", date);
 
       const initialValue = 0;
       const sumWithInitial = response.data.reduce(
@@ -75,7 +61,7 @@ export default function Dashboard() {
       setTotalSales(sumWithInitial);
       setTodaysSales(response.data);
     } catch (error) {
-      handleTokenError(error);
+      // handleTokenError(error);
 
       console.error("Error fetching bills:", error);
     }
@@ -86,12 +72,14 @@ export default function Dashboard() {
   };
   const handleTokenError = (error) => {
     if (error.response) {
-      const errorMessage = error.response.data.message;
-      setError(errorMessage);
-      setOpenSnackbar(true);
+      if (error.response.data.message) {
+        const errorMessage = error.response.data.message;
+        setError(errorMessage);
+        setOpenSnackbar(true);
+      }
 
       if (error.response.status === 403 || error.response.status === 401) {
-        localStorage.removeItem("loginDetails");
+        localStorage.removeItem("loginuser");
         navigate("/landingpage", {
           state: {
             errorMessage: "Invalid session, please login again",
@@ -101,19 +89,6 @@ export default function Dashboard() {
     } else {
       console.error("Error fetching order history:", error.message);
     }
-    // if (
-    //   (error.response && error.response.status === 403) ||
-    //   (error.response && error.response.status === 401)
-    // ) {
-    //   localStorage.removeItem("loginuser");
-    //   navigate("/landingpage", {
-    //     state: {
-    //       errorMessage: "Invalid session, please login again",
-    //     },
-    //   });
-    // } else {
-    //   console.error("Error:", error);
-    // }
   };
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
@@ -174,11 +149,12 @@ export default function Dashboard() {
           onChange={(e) => setSelectedDate(e.target.value)}
         />
       </div>
+
       <div className="dashboard-chart">
-        <div className="doughnutchart">
+        {/* <div className="doughnutchart">
           <h1>Doughnut chart for sails of individual product</h1>
           <Doughnutchart todaysSales={todaysSales} />
-        </div>
+        </div> */}
         <div className="barchart">
           <h1>Bar chart for sails of individual product</h1>
           <BarChart todaysSales={todaysSales} />

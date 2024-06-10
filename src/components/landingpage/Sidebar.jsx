@@ -2,6 +2,7 @@ import React from "react";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ViewInArIcon from "@mui/icons-material/ViewInAr";
 import DescriptionIcon from "@mui/icons-material/Description";
+import AccountBoxIcon from "@mui/icons-material/AccountBox";
 import { NavLink } from "react-router-dom";
 
 export default function Sidebar() {
@@ -56,7 +57,7 @@ export default function Sidebar() {
             : "sidebar-child"
         }
       >
-        <DescriptionIcon />
+        <AccountBoxIcon />
         <p>My acount</p>
       </NavLink>
     </div>

@@ -29,7 +29,6 @@ const Login = () => {
 
     try {
       const fetchedlogin = await getLogin(loginbody);
-      console.log(fetchedlogin);
       setEmail("");
       setPassword("");
       navigate("/landingpage/dashboard");
@@ -76,7 +75,7 @@ const Login = () => {
               onChange={handlePasswordChange}
             />
             {error && (
-              <p style={{ color: "red" }}>{error.response.data.message}</p>
+              <p style={{ color: "red" }}>{error?.response?.data?.message}</p>
             )}
 
             <Button

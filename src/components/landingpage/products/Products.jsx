@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
 import SearchIcon from "@mui/icons-material/Search";
-import config from "../../../config/config";
 import { Snackbar, Alert } from "@mui/material";
+import { addproduct, getallproduct } from "../../../actions/productAction";
 export default function Products() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,14 +18,8 @@ export default function Products() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(
-          `${config.baseUrl}${config.apiEndPoint.allproduct}?adminId=${loginuser.adminId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${loginuser.jwtToken}`,
-            },
-          }
-        );
+        const response = await getallproduct();
+
         setProducts(
           response.data.map((product) => ({
             productId: product.productId,
@@ -78,13 +71,7 @@ export default function Products() {
     };
 
     try {
-      const apiUrl = `${config.baseUrl}${config.apiEndPoint.addproduct}`;
-
-      await axios.post(apiUrl, productData, {
-        headers: {
-          Authorization: `Bearer ${loginuser.jwtToken}`,
-        },
-      });
+      const response = await addproduct(productData);
 
       setProducts((prevProducts) =>
         prevProducts.map((p) =>
@@ -120,12 +107,14 @@ export default function Products() {
 
   const handleTokenError = (error) => {
     if (error.response) {
-      const errorMessage = error.response.data.message;
-      setError(errorMessage);
-      setOpenSnackbar(true);
+      if (error.response.data.message) {
+        const errorMessage = error.response.data.message;
+        setError(errorMessage);
+        setOpenSnackbar(true);
+      }
 
       if (error.response.status === 403 || error.response.status === 401) {
-        localStorage.removeItem("loginDetails");
+        localStorage.removeItem("loginuser");
         navigate("/landingpage", {
           state: {
             errorMessage: "Invalid session, please login again",
@@ -135,19 +124,6 @@ export default function Products() {
     } else {
       console.error("Error fetching order history:", error.message);
     }
-    // if (
-    //   (error.response && error.response.status === 403) ||
-    //   (error.response && error.response.status === 401)
-    // ) {
-    //   localStorage.removeItem("loginuser");
-    //   navigate("/landingpage", {
-    //     state: {
-    //       errorMessage: "Invalid session, please login again",
-    //     },
-    //   });
-    // } else {
-    //   console.error("Error:", error);
-    // }
   };
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
@@ -189,6 +165,7 @@ export default function Products() {
               <th>Product code</th>
               <th>Product Name</th>
               <th>In Stock</th>
+              <th>Min Quantity</th>
               <th>Cost Price</th>
               <th>Selling Price</th>
               <th>Product Type</th>
@@ -211,6 +188,7 @@ export default function Products() {
                 <td>{product.productCode}</td>
                 <td>{product.productName}</td>
                 <td>{product.quantity}</td>
+                <td>{product.minimumQuantity}</td>
                 <td>{product.costPrice}</td>
                 <td>{product.sellingPrice}</td>
                 <td>{product.productType}</td>

@@ -7,7 +7,7 @@ export default function MyAccount() {
   const loginuser = JSON.parse(localStorage.getItem("loginuser"));
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem("loginuser");
     navigate("/");
   };
 

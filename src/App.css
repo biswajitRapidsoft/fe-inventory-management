@@ -238,7 +238,7 @@ body {
 .barchart {
   flex: 1; /* Each chart takes equal space */
   margin: 10px; /* Add margin between charts */
-  max-width: 50%; /* Limit the width of each chart to 50% of the container */
+  max-width: 100%; /* Limit the width of each chart to 50% of the container */
 }
 /* Product Page Styles */
 .product-page {

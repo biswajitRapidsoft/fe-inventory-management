@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { TextField, Button, Box } from "@mui/material";
-import axios from "axios";
-import config from "../../../config/config";
+
+import { Snackbar, Alert } from "@mui/material";
+import { addproduct, getallproduct } from "../../../actions/productAction";
 
 const AddProductForm = () => {
   const loginuser = JSON.parse(localStorage.getItem("loginuser"));
@@ -23,7 +24,9 @@ const AddProductForm = () => {
   };
 
   const [product, setProduct] = useState(initialProductState);
-  const [error, setError] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [error, setError] = useState(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   useEffect(() => {
     if (location.state?.product) {
@@ -38,7 +41,6 @@ const AddProductForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
 
     const productData = {
       productId: location.state?.product
@@ -57,42 +59,44 @@ const AddProductForm = () => {
     };
 
     try {
-      const apiUrl = `${config.baseUrl}${config.apiEndPoint.addproduct}`;
+      const response = await addproduct(productData);
 
-      const response = await axios.post(apiUrl, productData, {
-        headers: {
-          Authorization: `Bearer ${loginuser.jwtToken}`,
-        },
-      });
-
-      console.log("Product added/updated successfully:", response.data);
       navigate("/landingpage/products");
     } catch (error) {
       handleTokenError(error);
 
       console.error("Error adding/updating product:", error);
-      setError("Failed to add/update product. Please try again.");
     }
   };
   const handleTokenError = (error) => {
-    if (
-      (error.response && error.response.status === 403) ||
-      (error.response && error.response.status === 401)
-    ) {
-      localStorage.removeItem("loginuser");
-      navigate("/landingpage", {
-        state: {
-          errorMessage: "Invalid session, please login again",
-        },
-      });
+    if (error.response) {
+      if (error.response.data.message) {
+        const errorMessage = error.response.data.message;
+        setError(errorMessage);
+        setOpenSnackbar(true);
+      }
+
+      if (error.response.status === 403 || error.response.status === 401) {
+        localStorage.removeItem("loginuser");
+        navigate("/landingpage", {
+          state: {
+            errorMessage: "Invalid session, please login again",
+          },
+        });
+      }
     } else {
-      console.error("Error:", error);
+      console.error("Error fetching order history:", error.message);
     }
   };
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
+
   return (
     <Box className="add-product-container">
       <form onSubmit={handleSubmit}>
         <TextField
+          required
           label="Product Name"
           name="productName"
           value={product.productName}
@@ -101,6 +105,7 @@ const AddProductForm = () => {
           margin="normal"
         />
         <TextField
+          required
           label="Product Type"
           name="productType"
           value={product.productType}
@@ -109,18 +114,22 @@ const AddProductForm = () => {
           margin="normal"
         />
         <TextField
+          required
           label="Quantity"
           name="quantity"
           type="number"
+          inputProps={{ min: 0 }}
           value={product.quantity}
           onChange={handleInputChange}
           fullWidth
           margin="normal"
         />
         <TextField
+          required
           label="Minimum Quantity"
           name="minimumQuantity"
           type="number"
+          inputProps={{ min: 0 }}
           value={product.minimumQuantity}
           onChange={handleInputChange}
           fullWidth
@@ -128,18 +137,22 @@ const AddProductForm = () => {
         />
         <Box display="flex" gap="10px">
           <TextField
+            required
             label="Cost Price"
             name="costPrice"
             type="number"
+            inputProps={{ min: 0 }}
             value={product.costPrice}
             onChange={handleInputChange}
             fullWidth
             margin="normal"
           />
           <TextField
+            required
             label="Selling Price"
             name="sellingPrice"
             type="number"
+            inputProps={{ min: product.costPrice }}
             value={product.sellingPrice}
             onChange={handleInputChange}
             fullWidth
@@ -160,6 +173,15 @@ const AddProductForm = () => {
           </Button>
         </Box>
       </form>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="error">
+          {error}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

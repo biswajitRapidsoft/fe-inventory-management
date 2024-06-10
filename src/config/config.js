@@ -8,7 +8,7 @@
 //     addproduct: "admin/product/create-update",
 //     allbill: "admin/invoice",
 //     addbill: "admin/product/sales",
-//     billbydate: "admin/invoice/by-date",
+//     billbydate: "admin/invoice",
 //   },
 // });
 
@@ -37,7 +37,7 @@ const config = Object.freeze({
 //     addproduct: "IMS/addproduct",
 //     allbill: "IMS/allorders",
 //     addbill: "IMS/order",
-//     billbydate: "IMS/dateanalysis",
+//     billbydate: "IMS/allorders",
 //   },
 // });
 export default config;

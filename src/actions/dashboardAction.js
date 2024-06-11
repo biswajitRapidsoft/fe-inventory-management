@@ -6,7 +6,6 @@ import {
 export const getProducts = async (
   adminDetails,
   setProducts,
-  prepareCategoryData,
   prepareProductQuantityData,
   handleError
 ) => {
@@ -16,7 +15,6 @@ export const getProducts = async (
       adminDetails.jwtToken
     );
     setProducts(products);
-    prepareCategoryData(products);
     prepareProductQuantityData(products);
   } catch (error) {
     handleError(error);

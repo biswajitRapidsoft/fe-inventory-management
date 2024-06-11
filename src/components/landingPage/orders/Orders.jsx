@@ -16,8 +16,8 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { Alert } from "@mui/material";
-import moment from "moment";
 import { fetchOrders } from "../../../actions/orderAction";
+import * as XLSX from "xlsx";
 
 const OrderPaginationInfo = ({ currentPage, pageSize, totalOrders }) => {
   const startOrder = currentPage * pageSize + 1;
@@ -80,6 +80,106 @@ export default function Orders() {
     }
   };
 
+  // const exportAllOrders = async () => {
+  //   try {
+  //     const allOrders = await fetchOrders(
+  //       adminDetails,
+  //       searchQuery,
+  //       selectedDate,
+  //       0,
+  //       0
+  //     );
+  //     console.log("All orders:", allOrders);
+  //     const wb = XLSX.utils.book_new();
+  //     const ws = XLSX.utils.json_to_sheet(allOrders);
+  //     XLSX.utils.book_append_sheet(wb, ws, "All Orders");
+  //     XLSX.writeFile(wb, "all_orders.xlsx");
+  //   } catch (error) {
+  //     handleError(error);
+  //   }
+  // };
+
+  const exportAllOrders = async () => {
+    try {
+      const allOrders = await fetchOrders(
+        adminDetails,
+        searchQuery,
+        selectedDate,
+        0,
+        0
+      );
+
+      const wb = XLSX.utils.book_new();
+
+      // Iterate over each order and format the data for Excel
+      allOrders.forEach((order) => {
+        // Create a new worksheet for each order
+        const ws = XLSX.utils.json_to_sheet([
+          {
+            "Order Id": order.orderId,
+            "Customer Name": order.customerName,
+            "Phone Number": order.phoneNo,
+            Description: order.description,
+            "Total Amount": order.totalAmount.toFixed(2),
+            Date: new Date(order.date).toLocaleString([], {
+              month: "numeric",
+              day: "numeric",
+              year: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            }),
+          },
+        ]);
+
+        // Add a row for products
+        XLSX.utils.sheet_add_aoa(
+          ws,
+          [
+            [
+              "Product Id",
+              "Quantity",
+              "Total Price",
+              "Product Code",
+              "Product Name",
+              "Selling Price",
+            ],
+            ...order.products.map((product) => [
+              product.productId,
+              product.quantity,
+              product.totalPrice.toFixed(2),
+              product.productCode,
+              product.productName,
+              product.sellingPrice.toFixed(2),
+            ]),
+          ],
+          { origin: -1 }
+        );
+
+        // Add the worksheet to the workbook
+        XLSX.utils.book_append_sheet(wb, ws, order.orderId);
+      });
+
+      // Create a new worksheet for total bills
+      const totalBills = allOrders.reduce(
+        (acc, order) => acc + (order.totalBills || 0),
+        0
+      );
+      const totalBillsSheet = XLSX.utils.json_to_sheet([
+        { "Total Bills": totalBills },
+      ]);
+      XLSX.utils.sheet_add_aoa(totalBillsSheet, [["Total Bills"]], {
+        origin: -1,
+      });
+      XLSX.utils.book_append_sheet(wb, totalBillsSheet, "Total Bills");
+
+      // Write the workbook to a file and initiate the download
+      XLSX.writeFile(wb, "all_orders.xlsx");
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
   const createOrder = () => {
     navigate("/landingpage/createorder");
   };
@@ -94,6 +194,7 @@ export default function Orders() {
 
   const handleSearch = async (e) => {
     e.preventDefault();
+    setCurrentPage(0);
     await fetchOrderHistory();
   };
 
@@ -118,7 +219,12 @@ export default function Orders() {
       </Grid>
 
       <Grid item container xs={12}>
-        <Grid item xs={12} sm={6}>
+        <Grid
+          item
+          sm={12}
+          lg={6}
+          sx={{ height: "fit-content", marginBottom: "10px" }}
+        >
           <form className="history-search" onSubmit={handleSearch}>
             <input
               className="history-search-inp"
@@ -131,18 +237,41 @@ export default function Orders() {
               className="history-search-btn"
               type="submit"
               variant="contained"
+              sx={{ padding: "9px 20px" }}
             >
-              <h3>Search</h3>
+              Search
             </Button>
           </form>
         </Grid>
 
-        <Grid item container xs={12} sm={6} sx={{ justifyContent: "end" }}>
+        <Grid
+          item
+          container
+          sm={12}
+          lg={6}
+          sx={{
+            marginBottom: "10px",
+            padding: "10px",
+            bgcolor: "#c5dff8",
+            borderRadius: "10px",
+          }}
+        >
           <Grid item xs={6} sm={4} className="date">
             <TextField
               id="date"
               label="Select Date"
               type="date"
+              sx={{
+                width: "100%",
+                height: "42.5px",
+                bgcolor: "#fff",
+                "& .MuiInputBase-root": {
+                  height: "42.5px",
+                },
+                "& .MuiInputLabel-root": {
+                  lineHeight: "42.5px",
+                },
+              }}
               defaultValue={selectedDate}
               InputLabelProps={{
                 shrink: true,
@@ -150,15 +279,34 @@ export default function Orders() {
               onChange={handleDateChange}
             />
           </Grid>
+
           <Grid item xs={6} sm={4}>
             <Button
               className="add-btn"
               onClick={createOrder}
               variant="contained"
               color="primary"
-              sx={{ padding: "15px 20px" }}
+              sx={{
+                padding: "9px 20px",
+                width: "100%",
+              }}
             >
               Create Order
+            </Button>
+          </Grid>
+
+          <Grid item xs={6} sm={4}>
+            <Button
+              className="export-btn"
+              onClick={exportAllOrders}
+              variant="contained"
+              color="primary"
+              sx={{
+                padding: "9px 20px",
+                width: "100%",
+              }}
+            >
+              Export All
             </Button>
           </Grid>
         </Grid>

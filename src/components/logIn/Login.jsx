@@ -114,6 +114,9 @@ const Login = () => {
               Login
             </Button>
           </form>
+          <NavLink style={{ marginTop: "10px" }} to={"/signup"}>
+            Don't have an account? Sign Up
+          </NavLink>
         </Paper>
       </Grid>
       <Snackbar

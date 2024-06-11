@@ -19,3 +19,23 @@ export const getLogin = async (loginbody) => {
     throw errorMessage;
   }
 };
+
+export const getSignup = async (signupBody) => {
+  try {
+    const signupDetails = await fetchSignup(signupBody);
+    localStorage.setItem("signupDetails", JSON.stringify(signupDetails));
+    return signupDetails;
+  } catch (error) {
+    let errorMessage = "An error occurred during signup";
+    if (typeof error === "string") {
+      errorMessage = error;
+    } else if (
+      error.response &&
+      error.response.data &&
+      error.response.data.message
+    ) {
+      errorMessage = error.response.data.message;
+    }
+    throw errorMessage;
+  }
+};

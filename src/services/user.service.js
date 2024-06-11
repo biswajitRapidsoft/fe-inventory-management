@@ -16,3 +16,19 @@ export const fetchLogin = async (loginbody) => {
     }
   }
 };
+
+export const fetchSignup = async (signupBody) => {
+  try {
+    const response = await axios.post(
+      `${baseUrl}${apiEndPoint.signup}`,
+      signupBody
+    );
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data && error.response.data.message) {
+      throw error.response.data.message;
+    } else {
+      throw error;
+    }
+  }
+};

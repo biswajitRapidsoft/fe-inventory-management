@@ -11,6 +11,7 @@ import Paper from "@mui/material/Paper";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Autocomplete from "@mui/material/Autocomplete";
 import { fetchProducts, submitOrder } from "../../../actions/createOrderAction";
+import { MuiTelInput } from "mui-tel-input";
 
 export default function CreateOrder() {
   const [customerName, setCustomerName] = useState("");
@@ -122,188 +123,178 @@ export default function CreateOrder() {
   );
 
   return (
-    <>
+    <Grid
+      container
+      className="create-order-container"
+      gap={1}
+      sx={{ height: "100%" }}
+    >
       <Grid
-        container
-        className="create-order-container"
-        gap={1}
-        sx={{ height: "100%" }}
+        item
+        xs={12}
+        className="create-order-form"
+        sx={{ height: "fit-content" }}
       >
-        <Grid
-          item
-          xs={12}
-          className="create-order-form"
-          sx={{ height: "fit-content" }}
+        <Typography
+          variant="h5"
+          sx={{ textDecoration: "underline", marginBottom: "10px" }}
+          textAlign="center"
         >
-          <Typography
-            variant="h5"
-            sx={{ textDecoration: "underline", marginBottom: "10px" }}
-            textAlign="center"
-          >
-            Check Out Form
-          </Typography>
+          Check Out Form
+        </Typography>
 
-          <form onSubmit={handleSubmit}>
-            <Grid container spacing={2} className="checkout-customer-form">
-              <Grid item xs={12}>
-                <Autocomplete
-                  disablePortal
-                  id="combo-box-demo"
-                  options={activeProducts}
-                  getOptionLabel={(option) => option.productName}
-                  onChange={handleProductSelect}
-                  sx={{ width: 300 }}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Select Product" />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={4}>
-                <TextField
-                  sx={{ bgcolor: "white" }}
-                  label="Customer's Name"
-                  id="customerName"
-                  name="customerName"
-                  variant="outlined"
-                  type="text"
-                  required
-                  fullWidth
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                />
-              </Grid>
-
-              <Grid item xs={4}>
-                <TextField
-                  sx={{ bgcolor: "white" }}
-                  label="Phone No."
-                  id="customerPhoneNo"
-                  name="customerPhoneNo"
-                  variant="outlined"
-                  type="number"
-                  inputProps={{
-                    maxLength: 10,
-                    inputMode: "numeric",
-                    pattern: "[0-9]*",
-                  }}
-                  required
-                  fullWidth
-                  value={customerPhoneNo}
-                  onChange={(e) => setCustomerPhoneNo(e.target.value)}
-                />
-              </Grid>
-
-              <Grid item xs={4}>
-                <TextField
-                  sx={{ bgcolor: "white" }}
-                  label="Description"
-                  id="description"
-                  name="description"
-                  variant="outlined"
-                  type="text"
-                  inputProps={{ maxLength: 100 }}
-                  required
-                  fullWidth
-                  value={description}
-                  onChange={(e) => {
-                    const trimmedValue = e.target.value.trimStart();
-                    setDescription(trimmedValue);
-                  }}
-                />
-              </Grid>
+        <form onSubmit={handleSubmit}>
+          <Grid container spacing={2} className="checkout-customer-form">
+            <Grid item xs={12}>
+              <Autocomplete
+                disablePortal
+                id="combo-box-demo"
+                options={activeProducts}
+                getOptionLabel={(option) => option.productName}
+                onChange={handleProductSelect}
+                sx={{ width: 300 }}
+                renderInput={(params) => (
+                  <TextField {...params} label="Select Product" />
+                )}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <TextField
+                sx={{ bgcolor: "white" }}
+                label="Customer's Name"
+                id="customerName"
+                name="customerName"
+                variant="outlined"
+                type="text"
+                required
+                fullWidth
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+              />
             </Grid>
 
-            <TableContainer
-              component={Paper}
-              className="cart-table"
-              sx={{ marginTop: "15px" }}
-            >
-              <Table aria-label="simple table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Product Code</TableCell>
-                    <TableCell align="right">Product Name</TableCell>
-                    <TableCell align="right">Quantity</TableCell>
-                    <TableCell align="right">Total Price</TableCell>
-                    <TableCell align="right">Action</TableCell>
-                  </TableRow>
-                </TableHead>
-                {addedProducts.length > 0 && (
-                  <>
-                    <TableBody>
-                      {addedProducts.map((product) => (
-                        <TableRow
-                          key={product.productCode}
-                          sx={{
-                            "&:last-child td, &:last-child th": { border: 0 },
-                          }}
-                        >
-                          <TableCell component="th" scope="row">
-                            {product.productCode}
-                          </TableCell>
-                          <TableCell align="right">
-                            {product.productName}
-                          </TableCell>
-                          <TableCell align="right">
-                            <TextField
-                              type="number"
-                              value={product.purchaseQuantity}
-                              onChange={(e) =>
-                                handleQuantityChange(
-                                  product.productCode,
-                                  e.target.value
-                                )
-                              }
-                              inputProps={{
-                                min: 1,
-                                max: product.quantity,
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell align="right">
-                            {product.totalPrice}
-                          </TableCell>
-                          <TableCell align="right">
-                            <IconButton
-                              color="dark"
-                              onClick={() =>
-                                handleRemoveProduct(product.productCode)
-                              }
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                    <TableFooter>
-                      <TableRow>
-                        <TableCell colSpan={3} align="right">
-                          <Typography variant="h6">Total Price:</Typography>
+            <Grid item xs={4}>
+              <MuiTelInput
+                required
+                fullWidth
+                inputProps={{
+                  maxLength: 15,
+                }}
+                value={customerPhoneNo}
+                onChange={(e) => setCustomerPhoneNo(e)}
+              />
+            </Grid>
+
+            <Grid item xs={4}>
+              <TextField
+                sx={{ bgcolor: "white" }}
+                label="Description"
+                id="description"
+                name="description"
+                variant="outlined"
+                type="text"
+                inputProps={{ maxLength: 100 }}
+                required
+                fullWidth
+                value={description}
+                onChange={(e) => {
+                  const trimmedValue = e.target.value.trimStart();
+                  setDescription(trimmedValue);
+                }}
+              />
+            </Grid>
+          </Grid>
+
+          <TableContainer
+            component={Paper}
+            className="cart-table"
+            sx={{ marginTop: "15px" }}
+          >
+            <Table aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Product Code</TableCell>
+                  <TableCell align="right">Product Name</TableCell>
+                  <TableCell align="right">Quantity</TableCell>
+                  <TableCell align="right">Total Price</TableCell>
+                  <TableCell align="right">Action</TableCell>
+                </TableRow>
+              </TableHead>
+              {addedProducts.length > 0 && (
+                <>
+                  <TableBody>
+                    {addedProducts.map((product) => (
+                      <TableRow
+                        key={product.productCode}
+                        sx={{
+                          "&:last-child td, &:last-child th": { border: 0 },
+                        }}
+                      >
+                        <TableCell component="th" scope="row">
+                          {product.productCode}
                         </TableCell>
                         <TableCell align="right">
-                          <Typography variant="h6">{totalCartPrice}</Typography>
+                          {product.productName}
+                        </TableCell>
+                        <TableCell align="right">
+                          <TextField
+                            type="number"
+                            value={product.purchaseQuantity}
+                            onChange={(e) =>
+                              handleQuantityChange(
+                                product.productCode,
+                                e.target.value
+                              )
+                            }
+                            inputProps={{
+                              min: 1,
+                              max: product.quantity,
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell align="right">
+                          {product.totalPrice}
+                        </TableCell>
+                        <TableCell align="right">
+                          <IconButton
+                            color="dark"
+                            onClick={() =>
+                              handleRemoveProduct(product.productCode)
+                            }
+                          >
+                            <DeleteIcon />
+                          </IconButton>
                         </TableCell>
                       </TableRow>
-                    </TableFooter>
-                  </>
-                )}
-              </Table>
-            </TableContainer>
+                    ))}
+                  </TableBody>
+                  <TableFooter>
+                    <TableRow>
+                      <TableCell colSpan={3} align="right">
+                        <Typography variant="h6">Total Price:</Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="h6">{totalCartPrice}</Typography>
+                      </TableCell>
+                    </TableRow>
+                  </TableFooter>
+                </>
+              )}
+            </Table>
+          </TableContainer>
 
-            <Grid
-              item
-              xs={12}
-              className="checkout-customer-form"
-              sx={{ height: "fit-content", marginTop: "15px" }}
-            >
-              <Button variant="contained" color="primary" type="submit">
-                Check Out
-              </Button>
-            </Grid>
-          </form>
-        </Grid>
+          <Grid
+            item
+            xs={12}
+            className="checkout-customer-form"
+            sx={{ height: "fit-content", marginTop: "15px" }}
+          >
+            <Button variant="contained" color="primary" type="submit">
+              Check Out
+            </Button>
+          </Grid>
+        </form>
       </Grid>
-    </>
+    </Grid>
   );
 }

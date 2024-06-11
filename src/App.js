@@ -11,6 +11,7 @@ import CreateOrder from "./components/landingPage/orders/CreateOrder";
 import Orders from "./components/landingPage/orders/Orders";
 import { useState } from "react";
 import OrderDetails from "./components/landingPage/orders/OrderDetails";
+import Signup from "./components/logIn/Signup";
 
 function App() {
   const [emergencyList, setEmergencyList] = useState([]);
@@ -19,6 +20,12 @@ function App() {
     {
       path: "/",
       element: <Login />,
+      errorElement: <Error />,
+    },
+
+    {
+      path: "/signup",
+      element: <Signup />,
       errorElement: <Error />,
     },
 

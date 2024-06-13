@@ -8,22 +8,23 @@ import BarChart from "./Barchart";
 import { Snackbar, Alert } from "@mui/material";
 import { getallproduct } from "../../../actions/productAction";
 import { getallbill } from "../../../actions/billingAction";
-
+import { TextField } from "@mui/material";
 export default function Dashboard() {
   const [outOfStockCount, setOutOfStockCount] = useState(0);
   const [lowStockCount, setLowStockCount] = useState(0);
+  const [allstockcount, setallstockcount] = useState(0);
+  const [allstock, setallstock] = useState([]);
+
   const [totalSales, setTotalSales] = useState(0);
   const [todaysSales, setTodaysSales] = useState([]);
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
-  const [errorMessage, setErrorMessage] = useState("");
   const [error, setError] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // debugger;
     fetchProducts();
     fetchBills(selectedDate);
   }, [selectedDate]);
@@ -31,6 +32,8 @@ export default function Dashboard() {
   const fetchProducts = async () => {
     try {
       const response = await getallproduct();
+      setallstockcount(response.data.length);
+      setallstock(response.data);
 
       const outOfStock = response.data.filter(
         (product) => product.quantity === 0
@@ -43,7 +46,7 @@ export default function Dashboard() {
       setOutOfStockCount(outOfStock);
       setLowStockCount(lowStock);
     } catch (error) {
-      // handleTokenError(error);
+      handleTokenError(error);
 
       console.error("Error fetching products:", error);
     }
@@ -61,8 +64,9 @@ export default function Dashboard() {
       setTotalSales(sumWithInitial);
       setTodaysSales(response.data);
     } catch (error) {
-      // handleTokenError(error);
-
+      handleTokenError(error);
+      setTotalSales(0);
+      setTodaysSales([]);
       console.error("Error fetching bills:", error);
     }
   };
@@ -130,7 +134,7 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="dashboard-stock-child">
-          <h3>Day's total sales</h3>
+          <h3>Selected day's total sales</h3>
           <div className="dashboard-stock-count">
             <div className="green">
               <CurrencyRupeeIcon />
@@ -140,24 +144,36 @@ export default function Dashboard() {
         </div>
       </div>
       <div className="date-selector" style={{ margin: "10px" }}>
-        <label htmlFor="date">Select Date: </label>
-        <input
-          style={{ padding: "5px 10px" }}
+        <TextField
           type="date"
-          id="date"
           value={selectedDate}
           onChange={(e) => setSelectedDate(e.target.value)}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          sx={{
+            borderRadius: 1,
+            padding: "4px 8px",
+            width: "200px",
+            marginRight: 2,
+          }}
         />
       </div>
 
       <div className="dashboard-chart">
-        {/* <div className="doughnutchart">
-          <h1>Doughnut chart for sails of individual product</h1>
-          <Doughnutchart todaysSales={todaysSales} />
-        </div> */}
+        <div className="doughnutchart">
+          <h1 style={{ textAlign: "center" }}>Weighted Score</h1>
+          <Doughnutchart
+            outOfStockCount={outOfStockCount}
+            lowStockCount={lowStockCount}
+            allstockcount={allstockcount}
+          />
+        </div>
         <div className="barchart">
-          <h1>Bar chart for sails of individual product</h1>
-          <BarChart todaysSales={todaysSales} />
+          <h1 style={{ textAlign: "center" }}>
+            Sails of individual product by date
+          </h1>
+          <BarChart todaysSales={todaysSales} allstock={allstock} />
         </div>
       </div>
       <Snackbar

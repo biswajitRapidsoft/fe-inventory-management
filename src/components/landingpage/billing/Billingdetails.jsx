@@ -25,7 +25,7 @@ const BillDetails = () => {
     doc.text("Date", 150, 20);
     doc.setFontSize(20);
     doc.setTextColor("#008080");
-    doc.text(new Date(bill.date).toLocaleDateString(), 150, 30);
+    doc.text(bill.date, 150, 30);
 
     doc.setFontSize(12);
     doc.setTextColor("#000000");
@@ -92,12 +92,12 @@ const BillDetails = () => {
     <div className="bill-details">
       <div className="bill-header">
         <div className="total-amount-section">
-          <p>Total amount</p>
+          <p>Total amount:</p>
           <h2>Rs {bill.totalAmount}</h2>
         </div>
         <div className="date-section">
-          <p>Date</p>
-          <h2>{new Date(bill.date).toLocaleDateString()}</h2>
+          <p>Date:</p>
+          <h2>{bill.date}</h2>
         </div>
       </div>
 

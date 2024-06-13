@@ -1,4 +1,3 @@
-// src/LoginPage.js
 import React, { useState } from "react";
 import { TextField, Button, Typography, Paper } from "@mui/material";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -10,7 +9,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, seterror] = useState("");
-
+  const [loading, setloading] = useState(false);
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
   };
@@ -28,11 +27,14 @@ const Login = () => {
     };
 
     try {
+      setloading(true);
       const fetchedlogin = await getLogin(loginbody);
       setEmail("");
       setPassword("");
+      setloading(false);
       navigate("/landingpage/dashboard");
     } catch (error) {
+      setloading(false);
       seterror(error);
       console.error("Error while login:", error);
     }
@@ -84,6 +86,7 @@ const Login = () => {
               variant="contained"
               color="primary"
               sx={{ mt: 3, mb: 2 }}
+              disabled={loading}
             >
               Login
             </Button>

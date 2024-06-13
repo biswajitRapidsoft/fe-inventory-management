@@ -13,7 +13,7 @@ export default function MyAccount() {
 
   return (
     <Container
-      style={{ height: "calc(100vh - 70px)" }}
+      className="myacount-container"
       maxWidth="sm"
       sx={{
         display: "flex",

@@ -8,12 +8,36 @@ export default function Signup() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, seterror] = useState("");
-
+  const [error, setError] = useState("");
+  const [loading, setloading] = useState(false);
   let navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Simple regex for email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // Validation checks
+    if (!fullName.trim()) {
+      setError("Full Name should not be empty.");
+      return;
+    }
+
+    if (!email) {
+      setError("Email should not be empty.");
+      return;
+    }
+
+    if (!emailRegex.test(email)) {
+      setError("Invalid email format.");
+      return;
+    }
+
+    if (!password.trim()) {
+      setError("Password should not be empty.");
+      return;
+    }
 
     const userRegDetails = {
       userName: fullName,
@@ -22,11 +46,17 @@ export default function Signup() {
     };
 
     try {
+      setloading(true);
       await getSignup(userRegDetails);
+      setloading(false);
       navigate("/");
     } catch (error) {
-      seterror(error);
-      console.log(error);
+      setloading(false);
+      if (error.response) {
+        setError(error.response.data.message);
+      } else {
+        setError("Unexpected Error");
+      }
     }
   };
 
@@ -55,6 +85,8 @@ export default function Signup() {
               margin="normal"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
+              error={!!error && error.includes("Full Name")}
+              helperText={error.includes("Full Name") && error}
             />
 
             <TextField
@@ -68,6 +100,8 @@ export default function Signup() {
               margin="normal"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              error={!!error && error.includes("email")}
+              helperText={error.includes("email") && error}
             />
 
             <TextField
@@ -81,16 +115,22 @@ export default function Signup() {
               margin="normal"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              error={!!error && error.includes("Password")}
+              helperText={error.includes("Password") && error}
             />
-            {error && (
-              <p style={{ color: "red" }}>{error.response.data.message}</p>
-            )}
+            {error &&
+              !error.includes("Full Name") &&
+              !error.includes("email") &&
+              !error.includes("Password") && (
+                <p style={{ color: "red" }}>{error}</p>
+              )}
             <Button
               type="submit"
               variant="contained"
               color="primary"
               sx={{ mt: 3, fontSize: 20 }}
               fullWidth
+              disabled={loading}
             >
               Submit
             </Button>

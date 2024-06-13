@@ -15,6 +15,7 @@ export default function Products() {
   const [errorMessage, setErrorMessage] = useState("");
   const [error, setError] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [loading, setloading] = useState(false);
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -71,6 +72,7 @@ export default function Products() {
     };
 
     try {
+      setloading(true);
       const response = await addproduct(productData);
 
       setProducts((prevProducts) =>
@@ -78,8 +80,10 @@ export default function Products() {
           p.productId === product.productId ? updatedProduct : p
         )
       );
+      setloading(false);
     } catch (error) {
       handleTokenError(error);
+      setloading(false);
     }
   };
 
@@ -159,6 +163,8 @@ export default function Products() {
       </div>
 
       <div className="product-table">
+        <h1 style={{ marginBottom: "10px" }}>Products</h1>
+
         <table>
           <thead>
             <tr>
@@ -198,8 +204,23 @@ export default function Products() {
                   </button>
                 </td>
                 <td>
-                  <button onClick={() => handleisactive(product)}>
-                    {product.isActive ? "Active" : "Inactive"}
+                  <button
+                    onClick={() => handleisactive(product)}
+                    disabled={loading}
+                    style={{
+                      textDecoration: product.isActive
+                        ? "none"
+                        : "line-through",
+                      textDecorationColor: product.isActive ? "none" : "black",
+                    }}
+                  >
+                    {product.isActive
+                      ? loading
+                        ? "loading"
+                        : "Active"
+                      : loading
+                      ? "loading"
+                      : "Inactive"}
                   </button>
                 </td>
               </tr>

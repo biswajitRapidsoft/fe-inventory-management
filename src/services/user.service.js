@@ -3,8 +3,6 @@ import config from "../config/config";
 const loginuser = JSON.parse(localStorage.getItem("loginuser"));
 
 export const fetchLogin = async (loginbody) => {
-  console.log(loginbody, "loginbody");
-
   try {
     const response = await axios.post(
       `${config.baseUrl}${config.apiEndPoint.login}`,
@@ -28,6 +26,7 @@ export const fetchSignup = async (signupbody) => {
   }
 };
 export const fetchallproducts = async (url, header) => {
+  console.log(header);
   try {
     const response = await axios.get(url, header);
     return response;

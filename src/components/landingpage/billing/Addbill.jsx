@@ -10,10 +10,11 @@ import {
   Typography,
   Box,
   Paper,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { MuiTelInput } from "mui-tel-input";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { Snackbar, Alert } from "@mui/material";
 import { addbill } from "../../../actions/billingAction";
 import { getallproduct } from "../../../actions/productAction";
 
@@ -28,6 +29,7 @@ const AddBill = () => {
   const [date, setDate] = useState("");
   const [error, setError] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [loading, setloading] = useState(false);
   const loginuser = JSON.parse(localStorage.getItem("loginuser"));
 
   useEffect(() => {
@@ -62,7 +64,8 @@ const AddBill = () => {
         (product) => product.productId === selectedProduct.productId
       )
     ) {
-      alert("This product is already added.");
+      setError("This product is already added.");
+      setOpenSnackbar(true);
       return;
     }
 
@@ -77,6 +80,11 @@ const AddBill = () => {
         productCode: selectedProduct.productCode,
         totalPrice: 0,
       };
+      if (newProducts[index].maxQuantity <= 0) {
+        setError("Item you have added is out of stock");
+        setOpenSnackbar(true);
+        return;
+      }
     }
     setProducts(newProducts);
     updateTotalAmount(newProducts);
@@ -113,25 +121,8 @@ const AddBill = () => {
   const handleSave = async (e) => {
     e.preventDefault();
 
-    if (
-      !customerName ||
-      !customerNumber ||
-      !description ||
-      products.length === 0
-    ) {
-      alert("Please  add at least one product.");
+    if (!validateForm()) {
       return;
-    }
-
-    for (const product of products) {
-      if (!product.productId || !product.productName) {
-        alert("Please ensure all added products are selected.");
-        return;
-      }
-      if (product.quantity === 0) {
-        alert("Please ensure quantity is greater than zero for all products.");
-        return;
-      }
     }
 
     const items = products.map((product) => ({
@@ -147,16 +138,20 @@ const AddBill = () => {
       adminId: loginuser.adminId,
       customerName,
       description,
-      phoneNo: customerNumber,
+      phoneNo: customerNumber.replace(/ +/g, ""),
       products: items,
       totalAmount,
     };
 
     try {
-      const response = await addbill(order);
+      setloading(true);
+
+      await addbill(order);
+      setloading(false);
 
       navigate("/landingpage/billing");
     } catch (error) {
+      setloading(false);
       handleTokenError(error);
       console.error("Error:", error);
     }
@@ -169,6 +164,7 @@ const AddBill = () => {
   const handleChange = (newValue) => {
     setCustomerNumber(newValue);
   };
+
   const handleTokenError = (error) => {
     if (error.response) {
       if (error.response.data.message) {
@@ -189,6 +185,7 @@ const AddBill = () => {
       console.error("Error fetching order history:", error.message);
     }
   };
+
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
   };
@@ -199,6 +196,7 @@ const AddBill = () => {
 
       const availableProducts = response.data
         .filter((product) => product.isActive)
+        // .filter((product) => product.quantity > 0)
         .map((product) => ({
           productId: product.productId,
           productName: product.productName,
@@ -217,8 +215,56 @@ const AddBill = () => {
     }
   };
 
+  const countWords = (str) => {
+    return str.trim().length;
+  };
+
+  const validateForm = () => {
+    const errors = [];
+
+    if (!customerName.trim()) {
+      errors.push("Customer Name is required.");
+    }
+    if (countWords(customerName) > 20) {
+      errors.push("Customer Name cannot exceed 20 letters.");
+    }
+    if (!customerNumber.trim()) {
+      errors.push("Phone Number is required.");
+    }
+    if (!description.trim()) {
+      errors.push("Remarks are required.");
+    }
+    if (countWords(description) > 50) {
+      errors.push("Remarks cannot exceed 50 letters.");
+    }
+    if (products.length === 0) {
+      errors.push("Please add at least one product.");
+    }
+
+    for (const product of products) {
+      if (!product.productId || !product.productName) {
+        errors.push("Please ensure all added products are selected.");
+      }
+      if (product.quantity === 0) {
+        errors.push(
+          "Please ensure quantity is greater than zero for all products."
+        );
+      }
+    }
+
+    if (errors.length > 0) {
+      setError(errors.join(" "));
+      setOpenSnackbar(true);
+      return false;
+    }
+
+    return true;
+  };
+
   return (
     <Container>
+      <h1 style={{ textAlign: "center" }}>Add New Bill</h1>
+
       <Paper
         elevation={3}
         component="form"
@@ -241,7 +287,9 @@ const AddBill = () => {
           required
           label="Customer Name"
           value={customerName}
-          onChange={(e) => setCustomerName(e.target.value)}
+          onChange={(e) => {
+            setCustomerName(e.target.value);
+          }}
           fullWidth
         />
 
@@ -258,7 +306,9 @@ const AddBill = () => {
           required
           label="Remarks"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => {
+            setDescription(e.target.value);
+          }}
           multiline
           rows={4}
           fullWidth
@@ -321,8 +371,13 @@ const AddBill = () => {
         ))}
 
         <Box display="flex" justifyContent="space-between" gap={2}>
-          <Button variant="contained" color="primary" type="submit">
-            Save
+          <Button
+            variant="contained"
+            color="primary"
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "Save"}
           </Button>
           <Button variant="outlined" color="secondary" onClick={handleCancel}>
             Cancel

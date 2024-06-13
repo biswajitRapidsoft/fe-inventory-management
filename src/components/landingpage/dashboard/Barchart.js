@@ -19,7 +19,7 @@ ChartJS.register(
   Legend
 );
 
-export default function BarChart({ todaysSales }) {
+export default function BarChart({ todaysSales, allstock }) {
   function extractProductSales(salesData) {
     const productSales = new Map();
 
@@ -40,9 +40,28 @@ export default function BarChart({ todaysSales }) {
     return productSales;
   }
 
+  function extractProductStock(stockData) {
+    const productStock = new Map();
+
+    stockData.forEach((stockItem) => {
+      const { productName, quantity } = stockItem;
+      productStock.set(productName, quantity);
+    });
+
+    return productStock;
+  }
+
   const productSales = extractProductSales(todaysSales);
+  const productStock = extractProductStock(allstock);
+
+  // Filter out products that have no sales
   const productNames = Array.from(productSales.keys());
-  const quantitiesSold = Array.from(productSales.values());
+  const quantitiesSold = productNames.map(
+    (name) => productSales.get(name) || 0
+  );
+  const quantitiesLeft = productNames.map(
+    (name) => productStock.get(name) || 0
+  );
 
   const backgroundColorgenerator = (length) => {
     const backgroundColor = [];
@@ -66,6 +85,13 @@ export default function BarChart({ todaysSales }) {
         data: quantitiesSold,
         backgroundColor: "blue",
       },
+      {
+        label: "Stock Left",
+        data: quantitiesLeft,
+        backgroundColor: quantitiesLeft.map((quantity) =>
+          quantity === 0 ? "gray" : "red"
+        ),
+      },
     ],
   };
 
@@ -78,12 +104,12 @@ export default function BarChart({ todaysSales }) {
       },
       title: {
         display: true,
-        text: "Sales Quantity by Product",
+        text: "Sales and Stock Quantity by Product",
       },
       tooltip: {
         callbacks: {
           label: (context) => {
-            const label = context.label || "";
+            const label = context.dataset.label || "";
             const value = context.parsed.y || 0;
             return `${label}: ${value}`;
           },
@@ -98,7 +124,7 @@ export default function BarChart({ todaysSales }) {
   };
 
   return (
-    <div style={{ width: "100%,", height: "400px" }}>
+    <div style={{ width: "100%", height: "400px" }}>
       <Bar data={data} options={options} />
     </div>
   );

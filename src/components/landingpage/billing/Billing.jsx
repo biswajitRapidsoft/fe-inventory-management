@@ -16,10 +16,12 @@ import {
 } from "@mui/material";
 import { Snackbar, Alert } from "@mui/material";
 import { getallbill } from "../../../actions/billingAction";
+import * as XLSX from "xlsx";
 
 export default function Billing() {
   const navigate = useNavigate();
   const [bills, setBills] = useState([]);
+  const [extract, setExtract] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchDate, setSearchDate] = useState("");
   const [page, setPage] = useState(0);
@@ -27,23 +29,46 @@ export default function Billing() {
   const [totalBills, setTotalBills] = useState(0);
   const [error, setError] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const loginuser = JSON.parse(localStorage.getItem("loginuser"));
+  const [loading, setLoading] = useState(false);
 
   const fetchBills = async () => {
     try {
+      setLoading(true);
+
       const response = await getallbill(
-        searchQuery,
+        searchQuery.trim(),
         page,
         rowsPerPage,
         searchDate
       );
       setBills(response.data || []);
       setTotalBills(response.data[0].totalBills);
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
       handleTokenError(error);
       console.error("Error fetching bills:", error);
       setBills([]);
       setTotalBills(0);
+    }
+  };
+
+  const fetchAllBills = async () => {
+    try {
+      setLoading(true);
+      const response = await getallbill(
+        searchQuery.trim(),
+        0,
+        totalBills,
+        searchDate
+      );
+      setExtract(response.data || []);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      handleTokenError(error);
+      console.error("Error fetching all bills:", error);
+      setExtract([]);
     }
   };
 
@@ -99,6 +124,31 @@ export default function Billing() {
     setOpenSnackbar(false);
   };
 
+  const handleExtract = async () => {
+    await fetchAllBills();
+
+    const worksheet = XLSX.utils.json_to_sheet(extract);
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "ExtractData");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+
+    const url = window.URL.createObjectURL(data);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "extract_data.xlsx";
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
+
   return (
     <div className="billing-page">
       <Box
@@ -147,14 +197,34 @@ export default function Billing() {
                 marginRight: 2,
               }}
             />
-            <Button variant="contained" color="primary" type="submit">
-              Search
+            <Button
+              variant="contained"
+              color="primary"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "loading.." : "search"}
             </Button>
           </form>
         </Box>
-        <Button variant="contained" color="primary" onClick={handleAddBill}>
-          + Add Bill
-        </Button>
+        <Box
+          display="flex"
+          alignItems="center"
+          gap="10px"
+          justifyContent="space-between"
+        >
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleExtract}
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "Extract bills"}
+          </Button>
+          <Button variant="contained" color="primary" onClick={handleAddBill}>
+            + Add Bill
+          </Button>
+        </Box>
       </Box>
 
       <div className="previous-billings">
@@ -182,16 +252,7 @@ export default function Billing() {
                     <TableCell>{bill.description}</TableCell>
                     <TableCell>{bill.products.length}</TableCell>
                     <TableCell>{bill.phoneNo}</TableCell>
-                    <TableCell>
-                      {new Date(bill.date).toLocaleString([], {
-                        month: "numeric",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                        hour12: true,
-                      })}
-                    </TableCell>
+                    <TableCell>{bill.date}</TableCell>
                     <TableCell>{bill.totalAmount}</TableCell>
                     <TableCell>
                       <Button

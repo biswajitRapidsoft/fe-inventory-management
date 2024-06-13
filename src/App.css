@@ -105,7 +105,7 @@ body {
 }
 
 .sidebar-child:hover {
-  background-color: #e0e0e0;
+  background-color: rgb(200, 200, 217);
 }
 
 .sidebar .active {
@@ -146,7 +146,7 @@ body {
   align-items: center;
   border-radius: 10px;
   padding: 10px;
-  gap: 20px;
+  /* gap: 20px; */
 }
 
 .dashboard-about img {
@@ -188,7 +188,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: 20px 0px;
   flex-wrap: wrap;
   row-gap: 10px;
 }
@@ -238,7 +238,7 @@ body {
 .barchart {
   flex: 1; /* Each chart takes equal space */
   margin: 10px; /* Add margin between charts */
-  max-width: 100%; /* Limit the width of each chart to 50% of the container */
+  max-width: 50%; /* Limit the width of each chart to 50% of the container */
 }
 /* Product Page Styles */
 .product-page {
@@ -271,7 +271,7 @@ body {
 }
 
 .search-icon {
-  background-color: #007bff;
+  background-color: #5e60ce;
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -279,7 +279,7 @@ body {
 }
 
 .product-add button {
-  background-color: #007bff;
+  background-color: #5e60ce;
   color: #fff;
   border: none;
   padding: 10px 20px;
@@ -299,7 +299,7 @@ body {
   border-radius: 5px;
   margin-right: 10px;
   height: 40px;
-  background-color: #007bff;
+  background-color: #5e60ce;
   color: white;
 }
 .product-table {
@@ -329,7 +329,7 @@ body {
   width: 100%;
   height: 100%;
   padding: 10px;
-  background-color: blue;
+  background-color: #5e60ce;
   color: white;
   border: none;
   border-radius: 5px;
@@ -380,6 +380,7 @@ body {
 .bill-description,
 .bill-products {
   margin-bottom: 20px;
+  overflow-x: auto;
 }
 
 .bill-customer label,
@@ -451,7 +452,7 @@ body {
   display: inline-block;
   margin-top: 10px;
   padding: 10px 20px;
-  background-color: #007bff;
+  background-color: #5e60ce;
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -485,7 +486,7 @@ body {
 }
 
 .save-button {
-  background-color: #007bff;
+  background-color: #5e60ce;
   color: #fff;
 }
 
@@ -504,16 +505,16 @@ body {
 
 /* Billing Page Styles */
 .billing-page {
-  margin-top: 20px;
   padding: 20px;
   font-family: Arial, sans-serif;
+  min-height: calc(100vh - 70px);
 }
 
 .previous-billings {
   margin-top: 20px;
 }
 .previous-billings table button {
-  background-color: rgb(80, 80, 163);
+  background-color: #5e60ce;
   color: white;
   border: none;
   border-radius: 5px;
@@ -542,6 +543,7 @@ body {
 
 .add-product-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   padding: 20px;
@@ -637,6 +639,7 @@ body {
   margin: 5px 0;
   font-size: 24px;
   color: #333;
+  word-wrap: wrap;
 }
 
 .bill-info p {
@@ -657,6 +660,7 @@ body {
 .bill-products table {
   width: 100%;
   border-collapse: collapse;
+  overflow: auto;
 }
 
 .bill-products th,
@@ -680,22 +684,37 @@ body {
   width: 100%;
   height: 100%;
   padding: 10px;
-  background-color: blue;
+  background-color: #5e60ce;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
+
+.myacount-container {
+  height: calc(100vh - 70px);
+}
 /* Existing CSS... */
 
-@media screen and (max-width: 1024px) {
+@media screen and (max-width: 1134px) {
+  .dashboard-stock {
+    flex-direction: column;
+    align-items: center;
+    /* justify-content: center; */
+  }
+
+  .dashboard-stock-child {
+    width: 100%;
+    /* max-width: 400px; */
+    margin-bottom: 20px;
+  }
   .dashboard-about {
     flex-direction: column;
     align-items: center;
   }
 
   .dashboard-about img {
-    width: 100%;
+    width: 300px;
     height: auto;
   }
 
@@ -714,7 +733,7 @@ body {
 
   .dashboard-stock-child {
     width: 100%;
-    max-width: 400px;
+    /* max-width: 400px; */
     margin-bottom: 20px;
   }
 
@@ -778,6 +797,28 @@ body {
     display: grid;
     grid-template-columns: 1fr;
   }
+
+  .myacount-container {
+    height: calc(100vh - 154px);
+  }
+
+  .bill-header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .bill-details {
+    width: 80%;
+  }
+
+  .billing-page {
+    min-height: calc(100vh - 154px);
+  }
+
+  .product-page {
+    min-height: calc(100vh - 154px);
+  }
 }
 
 @media screen and (max-width: 480px) {
@@ -795,6 +836,16 @@ body {
 
   .dashboard-chart h1 {
     font-size: 1em;
+  }
+
+  .header-logo h3 {
+    font-weight: bolder;
+    font-size: larger;
+  }
+
+  .header-user p {
+    font-weight: bolder;
+    font-size: larger;
   }
 }
 

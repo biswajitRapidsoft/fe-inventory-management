@@ -5,6 +5,8 @@ import {
   TextField,
   Typography,
   Grid,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -15,8 +17,14 @@ export default function Signup() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   let navigate = useNavigate();
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,7 +39,26 @@ export default function Signup() {
       const response = await getSignup(userRegDetails);
       navigate("/");
     } catch (error) {
-      console.log(error);
+      handleError(error);
+    }
+  };
+
+  const handleError = (error) => {
+    if (error.response) {
+      const errorMessage = error.response.data.message;
+      setError(errorMessage);
+      setOpenSnackbar(true);
+
+      if (
+        error.response.status === 403 ||
+        error.response.status === 401 ||
+        error.response.status === 500
+      ) {
+        localStorage.removeItem("loginDetails");
+        navigate("/");
+      }
+    } else {
+      console.error("Error Adding / Editing Product:", error.message);
     }
   };
 
@@ -120,6 +147,15 @@ export default function Signup() {
           </NavLink>
         </Paper>
       </Grid>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="error">
+          {error}
+        </Alert>
+      </Snackbar>
     </Grid>
   );
 }

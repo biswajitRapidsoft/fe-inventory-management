@@ -1,4 +1,4 @@
-import { addEditProduct } from "../services/addProduct.service";
+import { addEditProduct } from "../services/user.service";
 
 const saveProduct = async (product, adminDetails) => {
   try {

@@ -1,4 +1,4 @@
-import { getProducts, createOrder } from "../services/createOrder.service";
+import { getProducts, createOrder } from "../services/user.service";
 
 const fetchProducts = async (adminId, token) => {
   try {

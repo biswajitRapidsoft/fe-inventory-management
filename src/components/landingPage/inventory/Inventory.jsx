@@ -7,6 +7,8 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   getAllProducts,
@@ -18,6 +20,8 @@ export default function Inventory() {
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeStatusFilter, setActiveStatusFilter] = useState("all");
+  const [error, setError] = useState(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,8 +36,31 @@ export default function Inventory() {
       );
       setProducts(productsData);
     } catch (error) {
-      console.error("Error fetching products:", error);
+      handleError(error, "fetching products");
     }
+  };
+
+  const handleError = (error, type) => {
+    if (error.response) {
+      const errorMessage = error.response.data.message;
+      setError(errorMessage);
+      setOpenSnackbar(true);
+
+      if (
+        error.response.status === 403 ||
+        error.response.status === 401 ||
+        error.response.status === 500
+      ) {
+        localStorage.removeItem("loginDetails");
+        navigate("/");
+      }
+    } else {
+      console.error(`Error ${type}:`, error.message);
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
   };
 
   const handleSearchChange = (event) => {
@@ -45,32 +72,46 @@ export default function Inventory() {
   };
 
   const toggleStatus = async (id) => {
-    const product = products.find((product) => product.productId === id);
-    if (product) {
-      const newStatus = !product.isActive;
-      const updatedProduct = await toggleProductStatus(
-        { ...product, isActive: newStatus },
-        adminDetails.jwtToken
-      );
-      if (updatedProduct) {
-        const updatedProducts = products.map((product) =>
-          product.productId === id
-            ? { ...product, isActive: newStatus }
-            : product
+    try {
+      const product = products.find((product) => product.productId === id);
+      if (product) {
+        const newStatus = !product.isActive;
+        const updatedProduct = await toggleProductStatus(
+          { ...product, isActive: newStatus },
+          adminDetails.jwtToken
         );
-        setProducts(updatedProducts);
+        if (updatedProduct) {
+          const updatedProducts = products.map((product) =>
+            product.productId === id
+              ? { ...product, isActive: newStatus }
+              : product
+          );
+          setProducts(updatedProducts);
+        }
       }
+    } catch (error) {
+      handleError(error, "toggling product status");
     }
   };
 
-  const filteredProducts = products?.filter(
-    (product) =>
-      (product.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.productCode.toString().includes(searchQuery)) &&
-      (activeStatusFilter === "all" ||
-        (activeStatusFilter === "active" && product.isActive) ||
-        (activeStatusFilter === "inactive" && !product.isActive))
-  );
+  const filteredProducts = products?.filter((product) => {
+    const nameMatch = product.productName
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const codeMatch = product.productCode.toString().includes(searchQuery);
+    const isActive =
+      activeStatusFilter === "all" ||
+      (activeStatusFilter === "active" && product.isActive) ||
+      (activeStatusFilter === "inactive" && !product.isActive);
+    const isLowStock =
+      (activeStatusFilter === "lowstock" &&
+        product.quantity < product.minimumQuantity) ||
+      product.quantity === 0;
+    const isOutOfStock =
+      activeStatusFilter === "outofstock" && product.quantity === 0;
+
+    return (nameMatch || codeMatch) && (isActive || isLowStock || isOutOfStock);
+  });
 
   const addProduct = () => {
     navigate("/landingpage/inventory/addeditproduct");
@@ -85,12 +126,7 @@ export default function Inventory() {
       container
       sx={{ bgcolor: "#fff", borderRadius: "10px", padding: "10px" }}
     >
-      <Grid
-        item
-        container
-        xs={12}
-        sx={{ height: "fit-content", marginBottom: "10px" }}
-      >
+      <Grid item container xs={12} sx={{ height: "fit-content" }}>
         <Grid
           item
           xs={12}
@@ -101,13 +137,14 @@ export default function Inventory() {
             bgcolor: "#c5dff8",
             height: "fit-content",
             borderRadius: "10px",
+            marginBottom: "10px",
           }}
         >
           <input
             className="search-inp"
             type="text"
             placeholder="Search by name"
-            value={searchQuery}
+            value={searchQuery.trim()}
             onChange={handleSearchChange}
           />
           <Button
@@ -120,6 +157,7 @@ export default function Inventory() {
               padding: "8px 20px",
               borderRadius: "6px",
             }}
+            disabled={!searchQuery || searchQuery.trim() === ""}
           >
             Search
           </Button>
@@ -130,8 +168,12 @@ export default function Inventory() {
           xs={12}
           sm={6}
           container
-          sx={{ justifyContent: "end", height: "fit-content" }}
-          gap={1}
+          sx={{
+            justifyContent: "end",
+            height: "fit-content",
+            marginBottom: "10px",
+          }}
+          spacing={1}
         >
           <Grid item xs={6} md={4} className="inventory-filter">
             <FormControl
@@ -147,6 +189,8 @@ export default function Inventory() {
                 <MenuItem value="all">All</MenuItem>
                 <MenuItem value="active">Active</MenuItem>
                 <MenuItem value="inactive">Inactive</MenuItem>
+                <MenuItem value="lowstock">Low Stock</MenuItem>
+                <MenuItem value="outofstock">Out Of Stock</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -159,7 +203,7 @@ export default function Inventory() {
               color="primary"
               sx={{ margin: 0, padding: "15px 20px", width: "100%" }}
             >
-              Add Product
+              + Add
             </Button>
           </Grid>
         </Grid>
@@ -203,7 +247,8 @@ export default function Inventory() {
                   <td
                     style={{
                       color:
-                        product.quantity < product.minimumQuantity
+                        product.quantity < product.minimumQuantity ||
+                        product.quantity === 0
                           ? "red"
                           : "inherit",
                     }}
@@ -214,7 +259,8 @@ export default function Inventory() {
                   <td
                     style={{
                       color:
-                        product.quantity < product.minimumQuantity
+                        product.quantity < product.minimumQuantity ||
+                        product.quantity === 0
                           ? "red"
                           : "inherit",
                     }}
@@ -225,7 +271,8 @@ export default function Inventory() {
                   <td
                     style={{
                       color:
-                        product.quantity < product.minimumQuantity
+                        product.quantity < product.minimumQuantity ||
+                        product.quantity === 0
                           ? "red"
                           : "inherit",
                     }}
@@ -236,7 +283,8 @@ export default function Inventory() {
                   <td
                     style={{
                       color:
-                        product.quantity < product.minimumQuantity
+                        product.quantity < product.minimumQuantity ||
+                        product.quantity === 0
                           ? "red"
                           : "inherit",
                     }}
@@ -247,7 +295,8 @@ export default function Inventory() {
                   <td
                     style={{
                       color:
-                        product.quantity < product.minimumQuantity
+                        product.quantity < product.minimumQuantity ||
+                        product.quantity === 0
                           ? "red"
                           : "inherit",
                     }}
@@ -258,7 +307,8 @@ export default function Inventory() {
                   <td
                     style={{
                       color:
-                        product.quantity < product.minimumQuantity
+                        product.quantity < product.minimumQuantity ||
+                        product.quantity === 0
                           ? "red"
                           : "inherit",
                     }}
@@ -273,6 +323,7 @@ export default function Inventory() {
                       variant="contained"
                       color="primary"
                       size="small"
+                      sx={{ width: "83px" }}
                     >
                       Edit
                     </Button>
@@ -285,6 +336,8 @@ export default function Inventory() {
                         backgroundColor: product.isActive
                           ? "#198754"
                           : "#dc3545",
+
+                        width: "83px",
                       }}
                       onClick={() => toggleStatus(product.productId)}
                       variant="contained"
@@ -300,6 +353,15 @@ export default function Inventory() {
           </table>
         </div>
       </Grid>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="error">
+          {error}
+        </Alert>
+      </Snackbar>
     </Grid>
   );
 }

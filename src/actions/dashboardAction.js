@@ -1,7 +1,4 @@
-import {
-  fetchProducts,
-  fetchOrderHistory,
-} from "../services/dashboard.service";
+import { fetchProducts, fetchOrderHistory } from "../services/user.service";
 
 export const getProducts = async (
   adminDetails,
@@ -17,7 +14,7 @@ export const getProducts = async (
     setProducts(products);
     prepareProductQuantityData(products);
   } catch (error) {
-    handleError(error);
+    handleError(error, "products");
   }
 };
 
@@ -35,6 +32,6 @@ export const getOrderHistory = async (
     );
     setOrders(orders);
   } catch (error) {
-    handleError(error);
+    handleError(error, "products");
   }
 };

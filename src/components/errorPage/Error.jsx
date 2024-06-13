@@ -8,6 +8,7 @@ export default function Error() {
 
   const errorToLogIn = () => {
     navigate("/");
+    localStorage.removeItem("loginDetails");
   };
   return (
     <>

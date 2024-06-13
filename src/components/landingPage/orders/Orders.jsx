@@ -61,6 +61,7 @@ export default function Orders() {
       setTotalOrders(totalOrders);
       setTotalPages(Math.ceil(totalOrders / pageSize));
     } catch (error) {
+      setOrders([]);
       handleError(error);
     }
   };
@@ -71,7 +72,11 @@ export default function Orders() {
       setError(errorMessage);
       setOpenSnackbar(true);
 
-      if ([403, 401, 500].includes(error.response.status)) {
+      if (
+        error.response.status === 403 ||
+        error.response.status === 401 ||
+        error.response.status === 500
+      ) {
         localStorage.removeItem("loginDetails");
         navigate("/");
       }
@@ -80,40 +85,13 @@ export default function Orders() {
     }
   };
 
-  // const exportAllOrders = async () => {
-  //   try {
-  //     const allOrders = await fetchOrders(
-  //       adminDetails,
-  //       searchQuery,
-  //       selectedDate,
-  //       0,
-  //       0
-  //     );
-  //     console.log("All orders:", allOrders);
-  //     const wb = XLSX.utils.book_new();
-  //     const ws = XLSX.utils.json_to_sheet(allOrders);
-  //     XLSX.utils.book_append_sheet(wb, ws, "All Orders");
-  //     XLSX.writeFile(wb, "all_orders.xlsx");
-  //   } catch (error) {
-  //     handleError(error);
-  //   }
-  // };
-
   const exportAllOrders = async () => {
     try {
-      const allOrders = await fetchOrders(
-        adminDetails,
-        searchQuery,
-        selectedDate,
-        0,
-        0
-      );
+      const allOrders = await fetchOrders(adminDetails, "", "", 0, 0);
 
       const wb = XLSX.utils.book_new();
 
-      // Iterate over each order and format the data for Excel
       allOrders.forEach((order) => {
-        // Create a new worksheet for each order
         const ws = XLSX.utils.json_to_sheet([
           {
             "Order Id": order.orderId,
@@ -132,7 +110,6 @@ export default function Orders() {
           },
         ]);
 
-        // Add a row for products
         XLSX.utils.sheet_add_aoa(
           ws,
           [
@@ -156,11 +133,9 @@ export default function Orders() {
           { origin: -1 }
         );
 
-        // Add the worksheet to the workbook
         XLSX.utils.book_append_sheet(wb, ws, order.orderId);
       });
 
-      // Create a new worksheet for total bills
       const totalBills = allOrders.reduce(
         (acc, order) => acc + (order.totalBills || 0),
         0
@@ -173,7 +148,6 @@ export default function Orders() {
       });
       XLSX.utils.book_append_sheet(wb, totalBillsSheet, "Total Bills");
 
-      // Write the workbook to a file and initiate the download
       XLSX.writeFile(wb, "all_orders.xlsx");
     } catch (error) {
       handleError(error);
@@ -231,13 +205,14 @@ export default function Orders() {
               type="text"
               placeholder="Search by name or code"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => setSearchQuery(e.target.value.trimStart())}
             />
             <Button
               className="history-search-btn"
               type="submit"
               variant="contained"
               sx={{ padding: "9px 20px" }}
+              disabled={!searchQuery}
             >
               Search
             </Button>
@@ -262,7 +237,7 @@ export default function Orders() {
               label="Select Date"
               type="date"
               sx={{
-                width: "100%",
+                width: "95%",
                 height: "42.5px",
                 bgcolor: "#fff",
                 "& .MuiInputBase-root": {
@@ -288,7 +263,7 @@ export default function Orders() {
               color="primary"
               sx={{
                 padding: "9px 20px",
-                width: "100%",
+                width: "95%",
               }}
             >
               Create Order
@@ -313,106 +288,107 @@ export default function Orders() {
       </Grid>
 
       <Grid item xs={12} sx={{ height: "calc(100% - 42px)" }}>
-        {orders.length > 0 ? (
-          <>
-            <TableContainer
-              component={Paper}
-              className="order-history-table-container"
-            >
-              <Table aria-label="order history table" stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    <TableCell className="tHead">
-                      <h4>Order Id</h4>
+        <TableContainer
+          component={Paper}
+          className="order-history-table-container"
+        >
+          <Table aria-label="order history table" stickyHeader>
+            <TableHead>
+              <TableRow sx={{ bgcolor: "#7286d3" }}>
+                <TableCell className="tHead">
+                  <h4>Order Id</h4>
+                </TableCell>
+                <TableCell className="tHead">
+                  <h4>Customer Name</h4>
+                </TableCell>
+                <TableCell className="tHead" align="left">
+                  <h4>Phone Number</h4>
+                </TableCell>
+                <TableCell className="tHead" align="left">
+                  <h4>Products</h4>
+                </TableCell>
+                <TableCell className="tHead" align="left">
+                  <h4>Total Amount</h4>
+                </TableCell>
+                <TableCell className="tHead" align="left">
+                  <h4>Remarks</h4>
+                </TableCell>
+                <TableCell className="tHead" align="left">
+                  <h4>Date</h4>
+                </TableCell>
+                <TableCell className="tHead" align="left">
+                  <h4>Action</h4>
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody className="order-history-tbody">
+              {orders.length > 0 ? (
+                orders.map((order) => (
+                  <TableRow key={order.orderId}>
+                    <TableCell component="th" scope="row">
+                      {order.orderId}
                     </TableCell>
-                    <TableCell className="tHead">
-                      <h4>Customer Name</h4>
+                    <TableCell component="th" scope="row">
+                      {order.customerName}
                     </TableCell>
-                    <TableCell className="tHead" align="center">
-                      <h4>Phone Number</h4>
+                    <TableCell align="left">{order.phoneNo}</TableCell>
+                    <TableCell align="left">{order.products.length}</TableCell>
+                    <TableCell align="left">
+                      ₹{order.totalAmount.toFixed(2)}
                     </TableCell>
-                    <TableCell className="tHead" align="center">
-                      <h4>Products</h4>
+                    <TableCell align="left">{order.description}</TableCell>
+                    <TableCell align="left">
+                      {order.date}
+                      {/* {new Date(order.date).toLocaleString([], {
+                    month: "numeric",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  })} */}
                     </TableCell>
-                    <TableCell className="tHead" align="center">
-                      <h4>Total Amount</h4>
-                    </TableCell>
-                    <TableCell className="tHead" align="center">
-                      <h4>Remarks</h4>
-                    </TableCell>
-                    <TableCell className="tHead" align="center">
-                      <h4>Date</h4>
-                    </TableCell>
-                    <TableCell className="tHead" align="center">
-                      <h4>Action</h4>
+                    <TableCell align="right">
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => openOrderDetails(order)}
+                      >
+                        Details
+                      </Button>
                     </TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody className="order-history-tbody">
-                  {orders.map((order) => (
-                    <TableRow key={order.date}>
-                      <TableCell component="th" scope="row">
-                        {order.orderId}
-                      </TableCell>
-                      <TableCell component="th" scope="row">
-                        {order.customerName}
-                      </TableCell>
-                      <TableCell align="left">{order.phoneNo}</TableCell>
-                      <TableCell align="left">
-                        {order.products.length}
-                      </TableCell>
-                      <TableCell align="left">
-                        ₹{order.totalAmount.toFixed(2)}
-                      </TableCell>
-                      <TableCell align="left">{order.description}</TableCell>
-                      <TableCell align="left">
-                        {new Date(order.date).toLocaleString([], {
-                          month: "numeric",
-                          day: "numeric",
-                          year: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                          hour12: true,
-                        })}
-                      </TableCell>
-                      <TableCell align="right">
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={() => openOrderDetails(order)}
-                        >
-                          Details
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                ))
+              ) : (
+                <TableRow>
+                  <Typography sx={{ textAlign: "center", padding: "10px 0" }}>
+                    No orders found
+                  </Typography>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-            <Grid
-              item
-              container
-              justifyContent="center"
-              alignItems="center"
-              xs={12}
-              sx={{ mt: 2 }}
-            >
-              <Pagination
-                count={totalPages}
-                page={currentPage + 1}
-                onChange={handlePageChange}
-              />
-              <OrderPaginationInfo
-                currentPage={currentPage}
-                pageSize={pageSize}
-                totalOrders={totalOrders}
-              />
-            </Grid>
-          </>
-        ) : (
-          <Typography textAlign="center">No orders found</Typography>
-        )}
+        <Grid
+          item
+          container
+          justifyContent="center"
+          alignItems="center"
+          xs={12}
+          sx={{ mt: 2 }}
+        >
+          <Pagination
+            count={totalPages}
+            page={currentPage + 1}
+            onChange={handlePageChange}
+          />
+          <OrderPaginationInfo
+            currentPage={currentPage}
+            pageSize={pageSize}
+            totalOrders={totalOrders}
+          />
+        </Grid>
       </Grid>
       <Snackbar
         open={openSnackbar}

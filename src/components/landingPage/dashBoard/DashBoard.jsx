@@ -36,7 +36,7 @@ ChartJS.register(
   ArcElement
 );
 
-export default function Analytics() {
+export default function DashBoard() {
   const adminDetails = JSON.parse(localStorage.getItem("loginDetails"));
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -112,7 +112,7 @@ export default function Analytics() {
 
   const navigate = useNavigate();
 
-  const handleError = (error) => {
+  const handleError = (error, type) => {
     if (error.response) {
       const errorMessage = error.response.data.message;
       setError(errorMessage);
@@ -127,7 +127,7 @@ export default function Analytics() {
         navigate("/");
       }
     } else {
-      console.error("Error fetching order history:", error.message);
+      console.error(`Error fetching ${type}:`, error.message);
     }
   };
 
@@ -178,10 +178,18 @@ export default function Analytics() {
   const activeProductsCount = calculateActiveProductsCount(products);
 
   const productQuantities = {};
+  const productRemainingQuantities = {};
   orders.forEach((order) => {
     order.products.forEach((product) => {
       productQuantities[product.productName] =
         (productQuantities[product.productName] || 0) + product.quantity;
+      const productDetails = products.find(
+        (p) => p.productName === product.productName
+      );
+      if (productDetails) {
+        productRemainingQuantities[product.productName] =
+          productDetails.quantity;
+      }
     });
   });
 
@@ -208,9 +216,20 @@ export default function Analytics() {
     datasets: [
       {
         label: "Quantity Sold",
-        data: Object.values(productQuantities),
-        backgroundColor: "rgba(114, 134, 211, 0.2)",
-        borderColor: "rgba(114, 134, 211, 1)",
+        data: Object.keys(productQuantities).map(
+          (productName) => productQuantities[productName] || 0
+        ),
+        backgroundColor: "rgba(255, 99, 132, 0.2)",
+        borderColor: "rgba(255, 99, 132, 1)",
+        borderWidth: 1,
+      },
+      {
+        label: "Quantity Left",
+        data: Object.keys(productQuantities).map(
+          (productName) => productRemainingQuantities[productName] || 0
+        ),
+        backgroundColor: "rgba(54, 162, 235, 0.2)",
+        borderColor: "rgba(54, 162, 235, 1)",
         borderWidth: 1,
       },
     ],
@@ -227,7 +246,7 @@ export default function Analytics() {
       y: {
         title: {
           display: true,
-          text: "Quantity Sold",
+          text: "Quantity",
         },
         beginAtZero: true,
       },
@@ -423,15 +442,12 @@ export default function Analytics() {
         </Grid>
 
         <Grid item md={6} sm={12} className="recent-sales" padding={2}>
-          <TableContainer
-            component={Paper}
-            style={{ maxHeight: 390, overflow: "auto" }}
-          >
-            <Table fixedHeader>
+          <TableContainer component={Paper} style={{ maxHeight: 390 }}>
+            <Table>
               <TableHead style={{ backgroundColor: "#7286d3" }}>
                 <TableRow>
                   <TableCell colSpan={2}>
-                    <Typography variant="h5">Recent Sales</Typography>
+                    <Typography variant="h5">Sales : {selectedDate}</Typography>
                   </TableCell>
                 </TableRow>
                 <TableRow>
@@ -439,7 +455,7 @@ export default function Analytics() {
                   <TableCell>Total Amount</TableCell>
                 </TableRow>
               </TableHead>
-              <TableBody>
+              <TableBody sx={{ overflow: "auto" }}>
                 {orders.map((order) => (
                   <TableRow key={order.orderId}>
                     <TableCell>{order.customerName}</TableCell>

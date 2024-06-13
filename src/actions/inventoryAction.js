@@ -1,7 +1,7 @@
 import {
   fetchAllProducts,
   updateProductStatus,
-} from "../services/inventory.service";
+} from "../services/user.service";
 
 const getAllProducts = async (adminId, jwtToken) => {
   try {

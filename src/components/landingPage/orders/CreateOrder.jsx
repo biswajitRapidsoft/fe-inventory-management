@@ -1,4 +1,15 @@
-import { Grid, TextField, Typography, Button, IconButton } from "@mui/material";
+import {
+  Grid,
+  TextField,
+  Typography,
+  Button,
+  IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
 import React, { useEffect, useState } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -19,6 +30,10 @@ export default function CreateOrder() {
   const [description, setDescription] = useState("");
   const [products, setProducts] = useState([]);
   const [addedProducts, setAddedProducts] = useState([]);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [productToRemove, setProductToRemove] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [loading, setLoading] = useState(false);
   const adminDetails = JSON.parse(localStorage.getItem("loginDetails"));
 
   useEffect(() => {
@@ -57,12 +72,21 @@ export default function CreateOrder() {
   };
 
   const handleRemoveProduct = (productCode) => {
+    setProductToRemove(productCode);
+    setOpenDialog(true);
+  };
+
+  const handleConfirmRemoveProduct = () => {
     setAddedProducts((prev) =>
-      prev.filter((product) => product.productCode !== productCode)
+      prev.filter((product) => product.productCode !== productToRemove)
     );
+    setOpenDialog(false);
+    setProductToRemove(null);
+    setSelectedProduct(null);
   };
 
   const handleProductSelect = (event, value) => {
+    setSelectedProduct(value);
     if (value) {
       const selectedProduct = products.find(
         (product) => product.productCode === value.productCode
@@ -93,7 +117,7 @@ export default function CreateOrder() {
     const orderDetails = {
       adminId: adminDetails.adminId,
       customerName,
-      phoneNo: customerPhoneNo,
+      phoneNo: customerPhoneNo.split(" ").join(""),
       description,
       totalAmount: totalCartPrice,
       products: addedProducts.map((product) => ({
@@ -107,12 +131,17 @@ export default function CreateOrder() {
     };
 
     try {
+      setLoading(true);
+
       await submitOrder(orderDetails, adminDetails.jwtToken);
       setCustomerName("");
       setCustomerPhoneNo("");
       setDescription("");
       setAddedProducts([]);
+      setSelectedProduct(null);
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
       console.error("Error creating order:", error);
     }
   };
@@ -151,14 +180,15 @@ export default function CreateOrder() {
                 id="combo-box-demo"
                 options={activeProducts}
                 getOptionLabel={(option) => option.productName}
+                value={selectedProduct}
                 onChange={handleProductSelect}
-                sx={{ width: 300 }}
+                sx={{ width: "100%" }}
                 renderInput={(params) => (
                   <TextField {...params} label="Select Product" />
                 )}
               />
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={12} md={4}>
               <TextField
                 sx={{ bgcolor: "white" }}
                 label="Customer's Name"
@@ -173,7 +203,7 @@ export default function CreateOrder() {
               />
             </Grid>
 
-            <Grid item xs={4}>
+            <Grid item xs={12} md={4}>
               <MuiTelInput
                 required
                 fullWidth
@@ -185,10 +215,10 @@ export default function CreateOrder() {
               />
             </Grid>
 
-            <Grid item xs={4}>
+            <Grid item xs={12} md={4}>
               <TextField
                 sx={{ bgcolor: "white" }}
-                label="Description"
+                label="Remarks"
                 id="description"
                 name="description"
                 variant="outlined"
@@ -284,17 +314,63 @@ export default function CreateOrder() {
           </TableContainer>
 
           <Grid
+            container
             item
             xs={12}
-            className="checkout-customer-form"
+            className="checkout-button-container"
             sx={{ height: "fit-content", marginTop: "15px" }}
+            justifyContent="center"
+            alignItems="center"
           >
-            <Button variant="contained" color="primary" type="submit">
+            <Button
+              variant="contained"
+              color="primary"
+              type="submit"
+              disabled={
+                !customerName ||
+                !customerPhoneNo ||
+                !description ||
+                addedProducts.length === 0 ||
+                loading === true
+              }
+              sx={{ textAlign: "center" }}
+            >
               Check Out
             </Button>
           </Grid>
         </form>
       </Grid>
+
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Confirm Deletion"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to remove this product from the cart?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setOpenDialog(false)}
+            color="primary"
+            variant="outlined"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmRemoveProduct}
+            color="primary"
+            variant="contained"
+            autoFocus
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Grid>
   );
 }

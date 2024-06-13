@@ -1,4 +1,4 @@
-import { getOrderHistory } from "../services/order.service";
+import { getOrderHistory } from "../services/user.service";
 
 const fetchOrders = async (
   adminDetails,

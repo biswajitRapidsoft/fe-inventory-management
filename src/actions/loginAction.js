@@ -6,17 +6,7 @@ export const getLogin = async (loginbody) => {
     localStorage.setItem("loginDetails", JSON.stringify(logindetails));
     return logindetails;
   } catch (error) {
-    let errorMessage = "An error occurred during login";
-    if (typeof error === "string") {
-      errorMessage = error;
-    } else if (
-      error.response &&
-      error.response.data &&
-      error.response.data.message
-    ) {
-      errorMessage = error.response.data.message;
-    }
-    throw errorMessage;
+    throw error.message || "An error occurred during login";
   }
 };
 
@@ -26,16 +16,6 @@ export const getSignup = async (signupBody) => {
     localStorage.setItem("signupDetails", JSON.stringify(signupDetails));
     return signupDetails;
   } catch (error) {
-    let errorMessage = "An error occurred during signup";
-    if (typeof error === "string") {
-      errorMessage = error;
-    } else if (
-      error.response &&
-      error.response.data &&
-      error.response.data.message
-    ) {
-      errorMessage = error.response.data.message;
-    }
-    throw errorMessage;
+    throw error.message || "An error occurred during signup";
   }
 };

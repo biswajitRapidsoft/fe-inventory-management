@@ -32,6 +32,11 @@ const Login = () => {
     setOpenSnackbar(false);
   };
 
+  const handleError = (error) => {
+    setError(error);
+    setOpenSnackbar(true);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -44,9 +49,7 @@ const Login = () => {
       const fetchedlogin = await getLogin(loginbody);
       navigate("/landingpage/dashboard");
     } catch (error) {
-      console.error("Error while login:", error);
-      setError(error);
-      setOpenSnackbar(true);
+      handleError(error);
     }
   };
 

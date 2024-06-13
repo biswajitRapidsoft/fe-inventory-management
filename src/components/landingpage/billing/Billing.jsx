@@ -21,7 +21,6 @@ import * as XLSX from "xlsx";
 export default function Billing() {
   const navigate = useNavigate();
   const [bills, setBills] = useState([]);
-  const [extract, setExtract] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchDate, setSearchDate] = useState("");
   const [page, setPage] = useState(0);
@@ -56,25 +55,19 @@ export default function Billing() {
   const fetchAllBills = async () => {
     try {
       setLoading(true);
-      const response = await getallbill(
-        searchQuery.trim(),
-        0,
-        totalBills,
-        searchDate
-      );
-      setExtract(response.data || []);
+      const response = await getallbill("", 0, 0, "");
       setLoading(false);
+      return response.data;
     } catch (error) {
       setLoading(false);
       handleTokenError(error);
       console.error("Error fetching all bills:", error);
-      setExtract([]);
     }
   };
 
   useEffect(() => {
     fetchBills();
-  }, [page, rowsPerPage]);
+  }, []);
 
   const handleAddBill = () => navigate("/landingpage/billing/app-bill");
 
@@ -125,28 +118,32 @@ export default function Billing() {
   };
 
   const handleExtract = async () => {
-    await fetchAllBills();
+    const extract = await fetchAllBills();
+    console.log(extract);
+    if (extract) {
+      const worksheet = XLSX.utils.json_to_sheet(extract);
 
-    const worksheet = XLSX.utils.json_to_sheet(extract);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "ExtractData");
 
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "ExtractData");
+      const excelBuffer = XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array",
+      });
 
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
-    });
+      const data = new Blob([excelBuffer], {
+        type: "application/octet-stream",
+      });
 
-    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-
-    const url = window.URL.createObjectURL(data);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "extract_data.xlsx";
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+      const url = window.URL.createObjectURL(data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "extract_data.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }
   };
 
   return (
